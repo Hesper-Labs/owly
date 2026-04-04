@@ -194,10 +194,10 @@ export function LineChart({
         </defs>
 
         {/* Grid lines */}
-        {yTickValues.map((v) => {
+        {yTickValues.map((v, vi) => {
           const y = padding.top + innerH - (v / maxValue) * innerH;
           return (
-            <g key={v}>
+            <g key={`grid-${vi}-${v}`}>
               <line
                 x1={padding.left}
                 y1={y}
