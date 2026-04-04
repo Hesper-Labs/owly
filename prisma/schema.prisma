@@ -246,3 +246,49 @@ model Webhook {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+// ==================== ACTIVITY LOG ====================
+
+model ActivityLog {
+  id          String   @id @default(uuid())
+  action      String   // conversation.created, ticket.assigned, settings.updated, etc.
+  entity      String   // conversation, ticket, settings, knowledge, team
+  entityId    String?
+  description String
+  userId      String?
+  userName    String   @default("System")
+  metadata    Json     @default("{}")
+  createdAt   DateTime @default(now())
+
+  @@index([entity])
+  @@index([createdAt])
+}
+
+// ==================== SLA RULES ====================
+
+model SLARule {
+  id                String   @id @default(uuid())
+  name              String
+  description       String   @default("")
+  channel           String   @default("all") // all, whatsapp, email, phone
+  priority          String   @default("all") // all, low, medium, high, urgent
+  firstResponseMins Int      @default(30)
+  resolutionMins    Int      @default(480)
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+// ==================== CANNED RESPONSES ====================
+
+model CannedResponse {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  category  String   @default("General")
+  shortcut  String   @default("") // e.g., /greeting, /refund
+  isActive  Boolean  @default(true)
+  usageCount Int     @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

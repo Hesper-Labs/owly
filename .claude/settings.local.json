@@ -28,7 +28,8 @@
       "Bash(GIT_INDEX_FILE= git commit -m \"$\\(cat <<''EOF'':*)",
       "Bash(ls -la .git/index*)",
       "Bash(touch .git/test_write_access)",
-      "Bash(rm .git/test_write_access)"
+      "Bash(rm .git/test_write_access)",
+      "mcp__Claude_Preview__preview_start"
     ]
   }
 }
