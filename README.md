@@ -1,36 +1,141 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<p align="center">
+  <img src="public/owly.png" alt="Owly" width="120" height="120" />
+</p>
 
-## Getting Started
+<h1 align="center">Owly</h1>
+<p align="center">Open-source AI-powered customer support agent</p>
 
-First, run the development server:
+<p align="center">
+  Self-hosted, free, and easy to set up. Connect WhatsApp, Email, and Phone to provide 24/7 AI customer support.
+</p>
+
+---
+
+## Features
+
+**Multi-Channel Support**
+- WhatsApp (via WhatsApp Web QR or Business API)
+- Email (IMAP/SMTP with branded HTML templates)
+- Phone (Twilio + OpenAI Whisper STT + ElevenLabs TTS)
+
+**AI-Powered Conversations**
+- OpenAI GPT integration with function calling
+- Knowledge base-aware responses (RAG)
+- Automatic ticket creation and team routing
+- Customer history context
+- Configurable tone and language
+
+**Admin Dashboard**
+- Real-time conversation management
+- Unified inbox across all channels
+- Customer CRM with profiles and notes
+- Ticket system with priority and assignment
+- Analytics with charts and metrics
+- Team and department management
+
+**Automation**
+- Auto-routing rules (keyword-based department routing)
+- Auto-tagging conversations
+- SLA rules with response time targets
+- Business hours with offline messages
+- Canned responses for quick replies
+- Customer satisfaction surveys
+
+**Professional Features**
+- Dark mode
+- Activity audit log
+- API key management
+- Interactive API documentation
+- Webhook integrations
+- CSV/JSON data export
+- Docker Compose deployment
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js 20+
+- PostgreSQL 16+
+
+### Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/yourusername/owly.git
+cd owly
+
+# Install dependencies
+npm install
+
+# Set up environment
+cp .env.example .env
+# Edit .env with your database URL and API keys
+
+# Run database migrations
+npx prisma migrate dev
+
+# (Optional) Load sample data
+npm run db:seed
+
+# Start the development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000 and follow the setup wizard.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Docker
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+# Start with Docker Compose
+docker compose up -d
 
-## Learn More
+# The app will be available at http://localhost:3000
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Configuration
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+All configuration is done through the admin dashboard:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Setting | Location |
+|---------|----------|
+| Business profile | Settings > General |
+| AI provider & model | Settings > AI Configuration |
+| Voice (ElevenLabs) | Settings > Voice |
+| Phone (Twilio) | Settings > Phone |
+| Email (SMTP/IMAP) | Settings > Email |
+| WhatsApp | Channels > WhatsApp |
+| Team & departments | Team |
+| SLA rules | SLA Rules |
+| Business hours | Business Hours |
+| Automation rules | Automation |
 
-## Deploy on Vercel
+## API
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Owly provides a REST API for integration with external systems.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+# Send a message
+curl -X POST http://localhost:3000/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Hello!", "channel": "api"}'
+
+# Health check
+curl http://localhost:3000/api/health
+```
+
+Full API documentation is available at `/api-docs` in the dashboard.
+
+## Tech Stack
+
+- **Framework:** Next.js 14 (App Router)
+- **Language:** TypeScript
+- **Database:** PostgreSQL + Prisma ORM
+- **UI:** Tailwind CSS
+- **AI:** OpenAI GPT (extensible to Claude, Ollama)
+- **Voice:** ElevenLabs TTS + OpenAI Whisper STT
+- **Phone:** Twilio Voice API
+- **WhatsApp:** whatsapp-web.js
+
+## License
+
+MIT

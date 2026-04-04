@@ -292,3 +292,94 @@ model CannedResponse {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+// ==================== CUSTOMERS ====================
+
+model Customer {
+  id            String         @id @default(uuid())
+  name          String
+  email         String         @default("")
+  phone         String         @default("")
+  whatsapp      String         @default("")
+  tags          String         @default("") // comma-separated
+  isBlocked     Boolean        @default(false)
+  notes         CustomerNote[]
+  metadata      Json           @default("{}")
+  firstContact  DateTime       @default(now())
+  lastContact   DateTime       @default(now())
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([email])
+  @@index([phone])
+  @@index([whatsapp])
+}
+
+model CustomerNote {
+  id         String   @id @default(uuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  content    String
+  authorName String   @default("Admin")
+  createdAt  DateTime @default(now())
+
+  @@index([customerId])
+}
+
+// ==================== AUTOMATION RULES ====================
+
+model AutomationRule {
+  id          String   @id @default(uuid())
+  name        String
+  description String   @default("")
+  type        String   // auto_route, auto_tag, auto_reply, keyword_alert
+  isActive    Boolean  @default(true)
+  conditions  Json     @default("[]") // [{field, operator, value}]
+  actions     Json     @default("[]") // [{type, target, value}]
+  priority    Int      @default(0)
+  triggerCount Int     @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ==================== BUSINESS HOURS ====================
+
+model BusinessHours {
+  id        String  @id @default("default")
+  enabled   Boolean @default(false)
+  timezone  String  @default("UTC")
+  monday    String  @default("09:00-18:00") // empty = closed
+  tuesday   String  @default("09:00-18:00")
+  wednesday String  @default("09:00-18:00")
+  thursday  String  @default("09:00-18:00")
+  friday    String  @default("09:00-18:00")
+  saturday  String  @default("")
+  sunday    String  @default("")
+  offlineMessage String @default("We are currently offline. We will get back to you during business hours.")
+}
+
+// ==================== API KEYS ====================
+
+model ApiKey {
+  id        String   @id @default(uuid())
+  name      String
+  key       String   @unique
+  isActive  Boolean  @default(true)
+  lastUsed  DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([key])
+}
+
+// ==================== INTERNAL NOTES ====================
+
+model InternalNote {
+  id             String   @id @default(uuid())
+  conversationId String
+  content        String
+  authorName     String   @default("Admin")
+  createdAt      DateTime @default(now())
+
+  @@index([conversationId])
+}
