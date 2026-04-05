@@ -43,7 +43,10 @@
       "Bash(export PATH=\"/opt/homebrew/bin:/usr/local/bin:$PATH\" C=\"/tmp/owly-cookies.txt\" CONV_ID=\"e8f066d5-38a3-4de8-8e30-25e5d47af14c\" CUST_ID=\"9b32420f-a67d-45f9-90bd-ba24eb2b0b26\" TICKET_ID=\"b40b3ab4-f88f-4169-a987-c3a2827d51ee\" __NEW_LINE_3794adf902dfeea5__ echo \"=== ADD MESSAGE TO CONVERSATION ===\" curl -s -b $C -X POST \"http://localhost:3000/api/conversations/$CONV_ID/messages\" -H \"Content-Type: application/json\" -d '{\"\"\"\"content\"\"\"\":\"\"\"\"Hello, I need help with my order\"\"\"\",\"\"\"\"role\"\"\"\":\"\"\"\"admin\"\"\"\"}')",
       "Bash(/dev/null __NEW_LINE_3794adf902dfeea5__ echo echo '=== ADD INTERNAL NOTE ===' curl -s -b $C -X POST http://localhost:3000/api/conversations/$CONV_ID/notes -H 'Content-Type: application/json' -d '{\"\"\"\"content\"\"\"\":\"\"\"\"Customer seems frustrated, handle with care\"\"\"\",\"\"\"\"authorName\"\"\"\":\"\"\"\"Admin\"\"\"\"}')",
       "Bash(/dev/null __NEW_LINE_3794adf902dfeea5__ echo echo '=== ADD CUSTOMER NOTE ===' curl -s -b $C -X POST http://localhost:3000/api/customers/$CUST_ID/notes -H 'Content-Type: application/json' -d '{\"\"\"\"content\"\"\"\":\"\"\"\"VIP customer, always prioritize\"\"\"\",\"\"\"\"authorName\"\"\"\":\"\"\"\"Admin\"\"\"\"}')",
-      "Bash(export PATH=\"/opt/homebrew/bin:/usr/local/bin:$PATH\" C=\"/tmp/owly-cookies.txt\" __NEW_LINE_b2d60bb06e4fb462__ echo \"=== ADMIN USERS ===\" curl -s -b $C http://localhost:3000/api/admin/users)"
+      "Bash(export PATH=\"/opt/homebrew/bin:/usr/local/bin:$PATH\" C=\"/tmp/owly-cookies.txt\" __NEW_LINE_b2d60bb06e4fb462__ echo \"=== ADMIN USERS ===\" curl -s -b $C http://localhost:3000/api/admin/users)",
+      "Bash(gh repo:*)",
+      "Bash(gh auth:*)",
+      "Bash(git push:*)"
     ]
   }
 }
