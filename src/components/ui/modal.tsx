@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -32,21 +32,7 @@ export function Modal({
   size = "md",
   className,
 }: ModalProps) {
-  const [visible, setVisible] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const backdropRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (open) {
-      requestAnimationFrame(() => setVisible(true));
-    } else {
-      setVisible(false);
-    }
-  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -64,28 +50,22 @@ export function Modal({
     [onClose]
   );
 
-  if (!open || !mounted) return null;
+  if (!open) return null;
+  if (typeof document === "undefined") return null;
 
   return createPortal(
     <div
       ref={backdropRef}
       onClick={handleBackdropClick}
-      className={cn(
-        "fixed inset-0 z-[9998] flex items-center justify-center bg-black/40 backdrop-blur-sm transition-opacity duration-200",
-        visible ? "opacity-100" : "opacity-0"
-      )}
+      className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in"
     >
       <div
         className={cn(
-          "w-full rounded-xl bg-owly-surface border border-owly-border shadow-xl transition-all duration-200",
+          "w-full rounded-xl bg-owly-surface border border-owly-border shadow-xl animate-scale-in",
           sizeStyles[size],
-          visible
-            ? "translate-y-0 scale-100 opacity-100"
-            : "translate-y-4 scale-95 opacity-0",
           className
         )}
       >
-        {/* Header */}
         {title && (
           <div className="flex items-center justify-between border-b border-owly-border px-6 py-4">
             <h2 className="text-base font-semibold text-owly-text">{title}</h2>
@@ -98,7 +78,6 @@ export function Modal({
           </div>
         )}
 
-        {/* Body */}
         <div className={cn("px-6 py-5", !title && "pt-6")}>
           {!title && (
             <button
@@ -111,7 +90,6 @@ export function Modal({
           {children}
         </div>
 
-        {/* Footer */}
         {footer && (
           <div className="border-t border-owly-border px-6 py-4 flex justify-end gap-3">
             {footer}

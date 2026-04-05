@@ -1,4 +1,3 @@
-import twilio from "twilio";
 import OpenAI from "openai";
 import { prisma } from "@/lib/prisma";
 import { chat, createNewConversation } from "@/lib/ai/engine";
