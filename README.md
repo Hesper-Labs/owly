@@ -1,16 +1,5 @@
 <p align="center">
-  <img src="public/owly.png" alt="Owly" width="140" height="140" />
-</p>
-
-<h1 align="center">Owly</h1>
-
-<p align="center">
-  <strong>Open-source AI-powered customer support agent</strong>
-</p>
-
-<p align="center">
-  Self-hosted, free, and easy to set up.<br/>
-  Connect WhatsApp, Email, and Phone to provide 24/7 AI customer support.
+  <img src="docs/social-preview.png" alt="Owly" width="100%" />
 </p>
 
 <p align="center">
@@ -35,8 +24,6 @@
 
 <p align="center">
   <img src="docs/demo.gif" alt="Owly Demo" width="700" />
-  <br/>
-  <em>Dashboard with onboarding checklist, real-time stats, and channel overview</em>
 </p>
 
 ---
