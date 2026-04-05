@@ -33,10 +33,8 @@
   <img src="https://img.shields.io/badge/PostgreSQL-16+-336791.svg" alt="PostgreSQL" />
 </p>
 
-<br/>
-
 <p align="center">
-  <img src="docs/screenshots/02-dashboard.png" alt="Owly Dashboard" width="100%" />
+  <img src="docs/demo.gif" alt="Owly Demo" width="700" />
   <br/>
   <em>Dashboard with onboarding checklist, real-time stats, and channel overview</em>
 </p>
