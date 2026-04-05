@@ -46,7 +46,26 @@
       "Bash(export PATH=\"/opt/homebrew/bin:/usr/local/bin:$PATH\" C=\"/tmp/owly-cookies.txt\" __NEW_LINE_b2d60bb06e4fb462__ echo \"=== ADMIN USERS ===\" curl -s -b $C http://localhost:3000/api/admin/users)",
       "Bash(gh repo:*)",
       "Bash(gh auth:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(export PATH=\"/opt/homebrew/bin:/usr/local/bin:$PATH\")",
+      "Bash(gh api:*)",
+      "Bash(export PATH=/opt/homebrew/bin:/usr/local/bin:$PATH)",
+      "Read(//private/tmp/owly-wiki/**)",
+      "Bash(ls *.png screenshots/*.png)",
+      "Bash(grep -l \"../../public/owly.png\\\\|../screenshots/\" *.md)",
+      "Bash(sed -i '' 's|../../public/owly.png|owly.png|g' *.md)",
+      "Bash(sed -i '' 's|\\\\.\\\\./screenshots/|screenshots/|g' *.md)",
+      "Bash(git stash:*)",
+      "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch -f --env-filter ':*)",
+      "Bash(node -e \":*)",
+      "Read(//private/tmp/white-ops/assets/**)",
+      "Read(//private/tmp/white-ops/assets/screenshots/**)",
+      "Bash(node scripts/create-demo-gif.mjs)",
+      "Bash(ffmpeg -y -framerate 0.5 -i /tmp/owly-gif-frames/frame-%04d.png -vf \"fps=10,scale=700:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=256[p];[s1][p]paletteuse=dither=bayer:bayer_scale=3\" -loop 0 docs/demo.gif)",
+      "Bash(head -5 /tmp/awesome-selfhosted/.github/*.md)",
+      "Read(//private/tmp/**)",
+      "Bash(rm -rf awesome-selfhosted-data)",
+      "Bash(gh pr:*)"
     ]
   }
 }
