@@ -65,7 +65,23 @@
       "Bash(head -5 /tmp/awesome-selfhosted/.github/*.md)",
       "Read(//private/tmp/**)",
       "Bash(rm -rf awesome-selfhosted-data)",
-      "Bash(gh pr:*)"
+      "Bash(gh pr:*)",
+      "Bash(gh release:*)",
+      "Bash(__NEW_LINE_c78950611a5056ef__ gh issue create --repo Hesper-Labs/owly --title \"[Feature]: Add Telegram channel support\" --label \"enhancement,good first issue\" --body \"Add Telegram Bot API as a new channel option. The bot should receive messages, pass them to the AI engine, and send responses back.:*)",
+      "Bash(__NEW_LINE_c78950611a5056ef__ gh issue create --repo Hesper-Labs/owly --title \"[Feature]: Add i18n support for admin panel\" --label \"enhancement,good first issue\" --body \"Currently all UI text is hardcoded in English. Add internationalization support so the admin panel can be used in other languages.:*)",
+      "Bash(__NEW_LINE_c78950611a5056ef__ gh issue create --repo Hesper-Labs/owly --title \"[Feature]: Add embeddable live chat widget\" --label \"enhancement,help wanted\" --body \"Create a JavaScript widget that businesses can embed on their websites with a single script tag.:*)",
+      "Bash(__NEW_LINE_c78950611a5056ef__ gh issue create --repo Hesper-Labs/owly --title \"[Feature]: Add WebSocket real-time updates\" --label \"enhancement,help wanted\" --body \"Currently the dashboard requires page refresh to see new messages. Add Socket.IO integration for real-time updates.:*)",
+      "Bash(__NEW_LINE_c78950611a5056ef__ gh issue create --repo Hesper-Labs/owly --title \"[Feature]: Add SMS channel via Twilio\" --label \"enhancement,good first issue\" --body \"Add SMS support using Twilio Messaging API. Twilio is already integrated for phone calls, so this extends the existing setup.:*)",
+      "Bash(__NEW_LINE_ae724ae81f6c3f04__ echo:*)",
+      "Bash(for f:*)",
+      "Bash(do)",
+      "Bash(test -f \"$f\")",
+      "Bash(echo \"OK  $f\")",
+      "Bash(__NEW_LINE_9ed4e7e4c0a29095__ echo:*)",
+      "Bash(export PATH=\"/opt/homebrew/bin:/usr/local/bin:$PATH\" __NEW_LINE_106c41c1b5350ae8__ echo \"========== OWLY ==========\" echo \"--- Authors ---\" git log --format=\"%an <%ae>\")",
+      "Bash(sort -u __NEW_LINE_106c41c1b5350ae8__ echo \"\" echo \"--- Committers ---\" git log --format=\"%cn <%ce>\")",
+      "Bash(gh run:*)",
+      "Bash(grep -n \"return { ...d,\" src/components/ui/chart.tsx)"
     ]
   }
 }

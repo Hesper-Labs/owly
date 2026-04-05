@@ -12,7 +12,6 @@ import {
   Users,
   ChevronRight,
   X,
-  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect, useCallback } from "react";
