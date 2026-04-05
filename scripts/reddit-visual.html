@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 1200px;
+  height: 630px;
+  background: linear-gradient(160deg, #1a2a3a 0%, #2D5A7B 40%, #4A7C9B 70%, #A8D0E6 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Subtle pattern overlay */
+body::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 20% 80%, rgba(168, 208, 230, 0.15) 0%, transparent 50%),
+              radial-gradient(circle at 80% 20%, rgba(196, 149, 106, 0.1) 0%, transparent 50%);
+}
+
+.container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 50px;
+  padding: 0 80px;
+}
+
+.left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.logo {
+  width: 200px;
+  height: 200px;
+  filter: drop-shadow(0 16px 32px rgba(0,0,0,0.3));
+}
+
+.badge {
+  display: flex;
+  gap: 8px;
+}
+
+.badge span {
+  padding: 4px 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.85);
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid rgba(255,255,255,0.15);
+}
+
+.right {
+  color: white;
+  max-width: 600px;
+}
+
+.title {
+  font-size: 56px;
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  font-size: 22px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.75);
+  line-height: 1.4;
+  margin-bottom: 28px;
+}
+
+.features {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 24px;
+}
+
+.feature {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255,255,255,0.85);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.feature .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #C4956A;
+  flex-shrink: 0;
+}
+
+.bottom {
+  position: absolute;
+  bottom: 24px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: rgba(255,255,255,0.4);
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="left">
+      <img src="../public/owly.png" class="logo" />
+      <div class="badge">
+        <span>MIT License</span>
+        <span>Self-Hosted</span>
+        <span>Free</span>
+      </div>
+    </div>
+    <div class="right">
+      <div class="title">Owly</div>
+      <div class="subtitle">Open-source AI agent that handles your customer support across WhatsApp, Email, and Phone -- 24/7.</div>
+      <div class="features">
+        <div class="feature"><span class="dot"></span> WhatsApp via QR scan</div>
+        <div class="feature"><span class="dot"></span> AI with knowledge base</div>
+        <div class="feature"><span class="dot"></span> Email (IMAP/SMTP)</div>
+        <div class="feature"><span class="dot"></span> Ticket system + CRM</div>
+        <div class="feature"><span class="dot"></span> Phone with ElevenLabs voice</div>
+        <div class="feature"><span class="dot"></span> Automation engine</div>
+        <div class="feature"><span class="dot"></span> 19-page admin dashboard</div>
+        <div class="feature"><span class="dot"></span> Docker one-command deploy</div>
+      </div>
+    </div>
+  </div>
+  <div class="bottom">github.com/Hesper-Labs/owly</div>
+</body>
+</html>

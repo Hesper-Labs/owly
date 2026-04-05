@@ -1,0 +1,74 @@
+name: Bug Report
+description: Report a bug or unexpected behavior
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for reporting a bug! Please fill out the information below.
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear description of the bug.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this?
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. See error
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+    validations:
+      required: true
+  - type: dropdown
+    id: channel
+    attributes:
+      label: Affected Channel
+      options:
+        - All
+        - WhatsApp
+        - Email
+        - Phone
+        - Dashboard
+        - API
+    validations:
+      required: false
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: "Run: cat package.json | grep version"
+      placeholder: "0.1.0"
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: Deployment Method
+      options:
+        - npm (local)
+        - Docker Compose
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Logs
+      description: Paste any error logs here.
+      render: shell
