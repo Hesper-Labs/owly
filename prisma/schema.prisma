@@ -120,6 +120,8 @@ model Conversation {
   channel         String
   customerName    String            @default("Unknown")
   customerContact String            @default("")
+  customerId      String?
+  customer        Customer?         @relation(fields: [customerId], references: [id], onDelete: SetNull)
   status          String            @default("active")
   satisfaction    Int?
   summary         String            @default("")
@@ -135,6 +137,7 @@ model Conversation {
   @@index([customerContact])
   @@index([channel, status])
   @@index([createdAt])
+  @@index([customerId])
 }
 
 model Message {
@@ -280,6 +283,9 @@ model ActivityLog {
   userId      String?
   userName    String   @default("System")
   metadata    Json     @default("{}")
+  requestId   String?
+  ipAddress   String?
+  userAgent   String?
   createdAt   DateTime @default(now())
 
   @@index([entity])
@@ -326,6 +332,7 @@ model Customer {
   tags          String         @default("") // comma-separated
   isBlocked     Boolean        @default(false)
   notes         CustomerNote[]
+  conversations Conversation[]
   metadata      Json           @default("{}")
   firstContact  DateTime       @default(now())
   lastContact   DateTime       @default(now())

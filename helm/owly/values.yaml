@@ -1,0 +1,138 @@
+# Owly Helm Chart - Default Values
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/hesper-labs/owly
+  pullPolicy: IfNotPresent
+  tag: ""  # Defaults to Chart.AppVersion
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# -- Service account
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+# -- Pod security
+podSecurityContext:
+  runAsUser: 1001
+  runAsGroup: 1001
+  fsGroup: 1001
+  runAsNonRoot: true
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  capabilities:
+    drop:
+      - ALL
+
+# -- Service
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+
+# -- Ingress
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+    # nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+  hosts:
+    - host: owly.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+    # - secretName: owly-tls
+    #   hosts:
+    #     - owly.example.com
+
+# -- Resources
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: "1"
+    memory: 1Gi
+
+# -- Autoscaling
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+# -- Health probes
+probes:
+  startup:
+    enabled: true
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    failureThreshold: 30
+  liveness:
+    enabled: true
+    periodSeconds: 30
+    failureThreshold: 3
+  readiness:
+    enabled: true
+    periodSeconds: 10
+    failureThreshold: 3
+
+# -- Database (external PostgreSQL)
+database:
+  # Provide either `url` OR individual fields (host, port, etc.)
+  url: ""
+  host: "postgresql"
+  port: 5432
+  name: "owly"
+  user: "postgres"
+  password: "postgres"
+  sslMode: "prefer"
+
+# -- Application config (non-sensitive)
+config:
+  nodeEnv: "production"
+  appUrl: "http://localhost:3000"
+  corsOrigin: ""
+
+# -- Secrets (sensitive)
+secrets:
+  # Use existingSecret to reference a pre-created K8s Secret
+  existingSecret: ""
+  # Only used when existingSecret is empty:
+  jwtSecret: ""
+  openaiApiKey: ""
+  twilioAccountSid: ""
+  twilioAuthToken: ""
+  twilioPhoneNumber: ""
+  elevenLabsApiKey: ""
+  webhookSecret: ""
+
+# -- Database migration (init container)
+migration:
+  enabled: true
+
+# -- Persistent storage for WhatsApp sessions
+persistence:
+  enabled: true
+  size: 1Gi
+  storageClass: ""
+  accessModes:
+    - ReadWriteOnce
+
+# -- Node scheduling
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# -- Pod annotations
+podAnnotations: {}

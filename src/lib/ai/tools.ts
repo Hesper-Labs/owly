@@ -88,7 +88,7 @@ export const owlyTools: ToolDefinition[] = [
     function: {
       name: "get_customer_history",
       description:
-        "Retrieve the customer's previous conversation history to provide context-aware support.",
+        "Retrieve the customer's previous conversation history across all channels to provide context-aware support.",
       parameters: {
         type: "object",
         properties: {
@@ -96,6 +96,11 @@ export const owlyTools: ToolDefinition[] = [
             type: "string",
             description:
               "Customer's contact info (phone number or email address)",
+          },
+          customerId: {
+            type: "string",
+            description:
+              "Customer's unique ID for cross-channel history lookup. Use this when available for more complete history.",
           },
         },
         required: ["customerContact"],
@@ -273,8 +278,13 @@ async function sendInternalEmail(
 async function getCustomerHistory(
   args: Record<string, unknown>
 ): Promise<string> {
+  // Cross-channel lookup: prefer customerId for unified history
+  const where = args.customerId
+    ? { customerId: args.customerId as string }
+    : { customerContact: args.customerContact as string };
+
   const conversations = await prisma.conversation.findMany({
-    where: { customerContact: args.customerContact as string },
+    where,
     include: {
       messages: {
         take: 5,
@@ -282,7 +292,7 @@ async function getCustomerHistory(
       },
     },
     orderBy: { createdAt: "desc" },
-    take: 5,
+    take: 10,
   });
 
   if (conversations.length === 0) {

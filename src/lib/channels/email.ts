@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { chat, createNewConversation } from "@/lib/ai/engine";
 import { escapeHtml, sanitizeEmailSubject } from "@/lib/security";
 import { logger } from "@/lib/logger";
+import { resolveCustomer } from "@/lib/customer-resolver";
 
 interface EmailConfig {
   imapHost: string;
@@ -70,12 +71,18 @@ async function processEmail(parsed: ParsedMail, config: EmailConfig) {
 
   if (!fromAddress) return;
 
+  // Resolve customer identity across channels
+  const customerId = await resolveCustomer("email", fromAddress, fromName);
+
   // Find or create conversation
   let conversation = await prisma.conversation.findFirst({
     where: {
       channel: "email",
-      customerContact: fromAddress,
       status: { in: ["active", "escalated"] },
+      OR: [
+        { customerId },
+        { customerContact: fromAddress },
+      ],
     },
   });
 
@@ -83,7 +90,8 @@ async function processEmail(parsed: ParsedMail, config: EmailConfig) {
     conversation = await createNewConversation(
       "email",
       fromName,
-      fromAddress
+      fromAddress,
+      customerId
     );
   }
 

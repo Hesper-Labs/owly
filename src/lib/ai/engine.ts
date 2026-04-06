@@ -243,13 +243,15 @@ async function callAI(
 export async function createNewConversation(
   channel: string,
   customerName: string,
-  customerContact: string
+  customerContact: string,
+  customerId?: string
 ) {
   return prisma.conversation.create({
     data: {
       channel,
       customerName,
       customerContact,
+      ...(customerId && { customerId }),
     },
   });
 }

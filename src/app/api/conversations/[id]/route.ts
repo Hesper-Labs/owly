@@ -15,6 +15,7 @@ export async function GET(
         messages: {
           orderBy: { createdAt: "asc" },
         },
+        customer: true,
         tags: {
           include: { tag: true },
         },

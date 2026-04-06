@@ -3,6 +3,7 @@ import * as qrcode from "qrcode";
 import { prisma } from "@/lib/prisma";
 import { chat, createNewConversation } from "@/lib/ai/engine";
 import { logger } from "@/lib/logger";
+import { resolveCustomer } from "@/lib/customer-resolver";
 
 let whatsappClient: Client | null = null;
 let currentQR: string | null = null;
@@ -91,12 +92,18 @@ export async function initWhatsApp(): Promise<void> {
     const customerName = contact.pushname || contact.name || "Unknown";
     const customerContact = message.from;
 
+    // Resolve customer identity across channels
+    const customerId = await resolveCustomer("whatsapp", customerContact, customerName);
+
     // Find or create conversation
     let conversation = await prisma.conversation.findFirst({
       where: {
         channel: "whatsapp",
-        customerContact,
         status: { in: ["active", "escalated"] },
+        OR: [
+          { customerId },
+          { customerContact },
+        ],
       },
     });
 
@@ -104,7 +111,8 @@ export async function initWhatsApp(): Promise<void> {
       conversation = await createNewConversation(
         "whatsapp",
         customerName,
-        customerContact
+        customerContact,
+        customerId
       );
     }
 

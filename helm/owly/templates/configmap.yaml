@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "owly.fullname" . }}
+  labels:
+    {{- include "owly.labels" . | nindent 4 }}
+data:
+  NODE_ENV: {{ .Values.config.nodeEnv | quote }}
+  NEXT_PUBLIC_APP_URL: {{ .Values.config.appUrl | quote }}
+  NEXT_TELEMETRY_DISABLED: "1"
+  PORT: "3000"
+  {{- if .Values.config.corsOrigin }}
+  CORS_ORIGIN: {{ .Values.config.corsOrigin | quote }}
+  {{- end }}

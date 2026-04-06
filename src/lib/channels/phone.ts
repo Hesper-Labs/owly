@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { prisma } from "@/lib/prisma";
 import { chat, createNewConversation } from "@/lib/ai/engine";
+import { resolveCustomer } from "@/lib/customer-resolver";
 
 interface PhoneConfig {
   twilioSid: string;
@@ -143,17 +144,23 @@ export async function handleIncomingCall(
     },
   });
 
+  // Resolve customer identity across channels
+  const customerId = await resolveCustomer("phone", from, "Phone Caller");
+
   // Create or find conversation
   let conversation = await prisma.conversation.findFirst({
     where: {
       channel: "phone",
-      customerContact: from,
       status: { in: ["active", "escalated"] },
+      OR: [
+        { customerId },
+        { customerContact: from },
+      ],
     },
   });
 
   if (!conversation) {
-    conversation = await createNewConversation("phone", "Phone Caller", from);
+    conversation = await createNewConversation("phone", "Phone Caller", from, customerId);
   }
 
   const settings = await prisma.settings.findFirst();
