@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Search, Sun, Moon, LogOut, User } from "lucide-react";
+import { Bell, Search, Sun, Moon, LogOut, User, Menu } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useTheme } from "@/lib/hooks/use-theme";
 import { useRouter } from "next/navigation";
@@ -39,11 +39,19 @@ export function Header({ title, description, actions }: HeaderProps) {
 
   return (
     <header className="flex items-center justify-between px-6 py-4 bg-owly-surface border-b border-owly-border transition-theme">
-      <div className="animate-fade-in">
-        <h2 className="text-xl font-semibold text-owly-text">{title}</h2>
-        {description && (
-          <p className="text-sm text-owly-text-light mt-0.5">{description}</p>
-        )}
+      <div className="flex items-center gap-3 animate-fade-in">
+        <button 
+          onClick={() => document.dispatchEvent(new CustomEvent('toggle-sidebar'))}
+          className="md:hidden p-2 -ml-2 text-owly-text-light hover:text-owly-text rounded-lg transition-colors"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+        <div>
+          <h2 className="text-xl font-semibold text-owly-text">{title}</h2>
+          {description && (
+            <p className="text-sm text-owly-text-light mt-0.5">{description}</p>
+          )}
+        </div>
       </div>
 
       <div className="flex items-center gap-2">

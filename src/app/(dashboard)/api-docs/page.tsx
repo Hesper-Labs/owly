@@ -703,8 +703,8 @@ function EndpointCard({ endpoint }: { endpoint: Endpoint }) {
           <h4 className="text-xs font-semibold text-owly-text-light uppercase tracking-wider mb-2">
             Parameters
           </h4>
-          <div className="border border-owly-border rounded-lg overflow-hidden">
-            <table className="w-full text-sm">
+          <div className="border border-owly-border rounded-lg overflow-x-auto">
+            <table className="w-full text-sm min-w-[500px]">
               <thead>
                 <tr className="bg-owly-bg">
                   <th className="text-left px-4 py-2 text-xs font-semibold text-owly-text-light uppercase">

@@ -25,7 +25,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface NavSection {
   title?: string;
@@ -84,15 +84,31 @@ const sections: NavSection[] = [
 export function Sidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    const handleToggle = () => setMobileOpen((prev) => !prev);
+    document.addEventListener("toggle-sidebar", handleToggle);
+    return () => document.removeEventListener("toggle-sidebar", handleToggle);
+  }, []);
 
   return (
-    <aside
-      className={cn(
-        "flex flex-col bg-owly-sidebar text-white transition-all duration-300",
-        collapsed ? "w-16" : "w-60"
+    <>
+      {mobileOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-black/50 md:hidden backdrop-blur-sm transition-opacity"
+          onClick={() => setMobileOpen(false)}
+        />
       )}
-    >
-      <div className="flex items-center gap-3 px-4 py-4 border-b border-white/10">
+      <aside
+        className={cn(
+          "flex flex-col bg-owly-sidebar text-white transition-all duration-300 z-50 h-[100dvh] shrink-0",
+          "absolute inset-y-0 left-0 md:relative",
+          mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
+          collapsed ? "w-60 md:w-16" : "w-60"
+        )}
+      >
+        <div className="flex items-center gap-3 px-4 py-4 border-b border-white/10 h-[73px]">
         <Image
           src="/owly.png"
           alt="Owly"
@@ -160,5 +176,6 @@ export function Sidebar() {
         </button>
       </div>
     </aside>
+    </>
   );
 }

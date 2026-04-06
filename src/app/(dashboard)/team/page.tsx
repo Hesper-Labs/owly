@@ -770,7 +770,7 @@ export default function TeamPage() {
             ) : (
               <div className="bg-owly-surface rounded-xl border border-owly-border overflow-hidden">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
+                  <table className="w-full text-sm min-w-[800px]">
                     <thead>
                       <tr className="border-b border-owly-border bg-owly-bg/50">
                         <th className="text-left px-5 py-3 font-medium text-owly-text-light">

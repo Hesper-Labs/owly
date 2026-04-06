@@ -345,7 +345,7 @@ export default function TicketsPage() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full min-w-[800px]">
                 <thead>
                   <tr className="border-b border-owly-border bg-owly-bg/50">
                     <th className="text-left px-4 py-3 text-xs font-medium text-owly-text-light uppercase tracking-wider">
