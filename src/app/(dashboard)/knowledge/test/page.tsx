@@ -1,6 +1,7 @@
 "use client";
 
 import { Header } from "@/components/layout/header";
+import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 import {
   Send,
@@ -50,6 +51,7 @@ interface KBStats {
 // ---------------------------------------------------------------------------
 
 export default function KnowledgeTestPage() {
+  const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -90,6 +92,11 @@ export default function KnowledgeTestPage() {
         lastUpdated,
       });
     } catch (err) {
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to fetch knowledge base statistics",
+      });
       console.error("Failed to fetch KB stats:", err);
     }
   }, []);
@@ -153,6 +160,11 @@ export default function KnowledgeTestPage() {
 
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (err) {
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to test knowledge base",
+      });
       console.error("Failed to test KB:", err);
       setError("An unexpected error occurred. Check your AI configuration.");
     } finally {

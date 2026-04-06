@@ -1,6 +1,7 @@
 "use client";
 
 import { Header } from "@/components/layout/header";
+import { useToast } from "@/components/ui/toast";
 import {
   ScrollText,
   MessageSquare,
@@ -75,6 +76,7 @@ const entityConfig: Record<
 };
 
 export default function ActivityPage() {
+  const { toast } = useToast();
   const [data, setData] = useState<ActivityResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -94,6 +96,11 @@ export default function ActivityPage() {
         setData(json);
       }
     } catch (error) {
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to fetch activities",
+      });
       console.error("Failed to fetch activities:", error);
     } finally {
       setLoading(false);

@@ -1,6 +1,7 @@
 "use client";
 
 import { Header } from "@/components/layout/header";
+import { useToast } from "@/components/ui/toast";
 import {
   Search,
   Plus,
@@ -104,6 +105,7 @@ const channelColors: Record<string, string> = {
 // ---------- Main Page ----------
 
 export default function CustomersPage() {
+  const { toast } = useToast();
   const [customers, setCustomers] = useState<CustomerData[]>([]);
   const [pagination, setPagination] = useState<PaginationData>({
     page: 1,
@@ -168,6 +170,11 @@ export default function CustomersPage() {
           setPagination(data.pagination);
         }
       } catch (error) {
+        toast({
+          type: "error",
+          title: "Error",
+          description: "Failed to fetch customers",
+        });
         console.error("Failed to fetch customers:", error);
       } finally {
         setLoading(false);
@@ -192,6 +199,11 @@ export default function CustomersPage() {
         });
       }
     } catch (error) {
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to fetch customer detail",
+      });
       console.error("Failed to fetch customer detail:", error);
     } finally {
       setDetailLoading(false);
@@ -230,6 +242,11 @@ export default function CustomersPage() {
         fetchCustomers(pagination.page);
       }
     } catch (error) {
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to update customer",
+      });
       console.error("Failed to update customer:", error);
     }
   };
@@ -247,6 +264,11 @@ export default function CustomersPage() {
         fetchCustomers(pagination.page);
       }
     } catch (error) {
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to toggle block status",
+      });
       console.error("Failed to toggle block:", error);
     }
   };
@@ -260,6 +282,11 @@ export default function CustomersPage() {
         fetchCustomers(pagination.page);
       }
     } catch (error) {
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to delete customer",
+      });
       console.error("Failed to delete customer:", error);
     }
   };
@@ -281,6 +308,11 @@ export default function CustomersPage() {
         fetchCustomerDetail(selectedCustomer.id);
       }
     } catch (error) {
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to add note",
+      });
       console.error("Failed to add note:", error);
     } finally {
       setAddingNote(false);
@@ -302,6 +334,11 @@ export default function CustomersPage() {
         fetchCustomers();
       }
     } catch (error) {
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to add customer",
+      });
       console.error("Failed to add customer:", error);
     } finally {
       setAddLoading(false);

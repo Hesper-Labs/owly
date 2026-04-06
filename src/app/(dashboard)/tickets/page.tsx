@@ -1,5 +1,7 @@
 "use client";
 
+import { useToast } from "@/components/ui/toast";
+
 import { Header } from "@/components/layout/header";
 import {
   Ticket,
@@ -87,6 +89,7 @@ const priorityLabels: Record<string, string> = {
 };
 
 export default function TicketsPage() {
+  const { toast } = useToast();
   const [tickets, setTickets] = useState<TicketData[]>([]);
   const [departments, setDepartments] = useState<DepartmentData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -122,6 +125,11 @@ export default function TicketsPage() {
         setTickets(data);
       }
     } catch (error) {
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to fetch tickets",
+      });
       console.error("Failed to fetch tickets:", error);
     } finally {
       setLoading(false);
@@ -136,6 +144,11 @@ export default function TicketsPage() {
         setDepartments(data);
       }
     } catch (error) {
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to fetch departments",
+      });
       console.error("Failed to fetch departments:", error);
     }
   }, []);
@@ -172,6 +185,11 @@ export default function TicketsPage() {
         fetchTickets();
       }
     } catch (error) {
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to create ticket",
+      });
       console.error("Failed to create ticket:", error);
     } finally {
       setSaving(false);
@@ -194,6 +212,11 @@ export default function TicketsPage() {
         fetchTickets();
       }
     } catch (error) {
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to update ticket",
+      });
       console.error("Failed to update ticket:", error);
     }
   };
@@ -206,6 +229,11 @@ export default function TicketsPage() {
         fetchTickets();
       }
     } catch (error) {
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to delete ticket",
+      });
       console.error("Failed to delete ticket:", error);
     }
   };

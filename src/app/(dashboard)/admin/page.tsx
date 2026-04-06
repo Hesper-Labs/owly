@@ -1,6 +1,7 @@
 "use client";
 
 import { Header } from "@/components/layout/header";
+import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 import {
   Key,
@@ -83,6 +84,7 @@ function formatDate(dateStr: string): string {
 // ---------------------------------------------------------------------------
 
 export default function AdminPage() {
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<"users" | "apikeys">("users");
 
   // --- Users state ---
@@ -136,6 +138,11 @@ export default function AdminPage() {
         setUsers(data);
       }
     } catch (err) {
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to fetch admin users",
+      });
       console.error("Failed to fetch users:", err);
     } finally {
       setLoadingUsers(false);
@@ -151,6 +158,11 @@ export default function AdminPage() {
         setApiKeys(data);
       }
     } catch (err) {
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to fetch API keys",
+      });
       console.error("Failed to fetch API keys:", err);
     } finally {
       setLoadingKeys(false);
@@ -227,6 +239,11 @@ export default function AdminPage() {
         setUserError(data.error || "Failed to save user.");
       }
     } catch (err) {
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to save user information",
+      });
       console.error("Failed to save user:", err);
       setUserError("An unexpected error occurred.");
     } finally {
@@ -250,6 +267,11 @@ export default function AdminPage() {
         setDeleteUserError(data.error || "Failed to delete user.");
       }
     } catch (err) {
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to delete user",
+      });
       console.error("Failed to delete user:", err);
       setDeleteUserError("An unexpected error occurred.");
     } finally {
@@ -293,6 +315,11 @@ export default function AdminPage() {
         setKeyError(data.error || "Failed to create API key.");
       }
     } catch (err) {
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to create API key",
+      });
       console.error("Failed to create API key:", err);
       setKeyError("An unexpected error occurred.");
     } finally {
@@ -311,6 +338,11 @@ export default function AdminPage() {
         await fetchApiKeys();
       }
     } catch (err) {
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to update API key status",
+      });
       console.error("Failed to toggle API key:", err);
     }
   }
@@ -327,6 +359,11 @@ export default function AdminPage() {
         await fetchApiKeys();
       }
     } catch (err) {
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to delete API key",
+      });
       console.error("Failed to delete API key:", err);
     } finally {
       setDeletingKey(false);

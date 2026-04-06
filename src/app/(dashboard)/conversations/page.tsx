@@ -1,6 +1,7 @@
 "use client";
 
 import { Header } from "@/components/layout/header";
+import { useToast } from "@/components/ui/toast";
 import {
   MessageCircle,
   Mail,
@@ -81,6 +82,7 @@ const statuses = [
 ];
 
 export default function ConversationsPage() {
+  const { toast } = useToast();
   const [conversations, setConversations] = useState<ConversationData[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedConversation, setSelectedConversation] =
@@ -108,6 +110,11 @@ export default function ConversationsPage() {
         setConversations(data);
       }
     } catch (error) {
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to fetch conversations",
+      });
       console.error("Failed to fetch conversations:", error);
     } finally {
       setLoading(false);
@@ -123,6 +130,11 @@ export default function ConversationsPage() {
         setSelectedConversation(data);
       }
     } catch (error) {
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to fetch conversation detail",
+      });
       console.error("Failed to fetch conversation detail:", error);
     } finally {
       setDetailLoading(false);
@@ -163,6 +175,11 @@ export default function ConversationsPage() {
         fetchConversations();
       }
     } catch (error) {
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to send message",
+      });
       console.error("Failed to send message:", error);
     } finally {
       setSending(false);
@@ -182,6 +199,11 @@ export default function ConversationsPage() {
         fetchConversations();
       }
     } catch (error) {
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to update status",
+      });
       console.error("Failed to update status:", error);
     }
   };

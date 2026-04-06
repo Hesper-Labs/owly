@@ -1,6 +1,7 @@
 "use client";
 
 import { Header } from "@/components/layout/header";
+import { useToast } from "@/components/ui/toast";
 import {
   Workflow,
   Plus,
@@ -85,6 +86,7 @@ const defaultForm = {
 };
 
 export default function AutomationPage() {
+  const { toast } = useToast();
   const [rules, setRules] = useState<AutomationRuleData[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -104,6 +106,11 @@ export default function AutomationPage() {
         setRules(data);
       }
     } catch (error) {
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to fetch automation rules",
+      });
       console.error("Failed to fetch automation rules:", error);
     } finally {
       setLoading(false);
@@ -175,6 +182,11 @@ export default function AutomationPage() {
         fetchRules();
       }
     } catch (error) {
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to save automation rule",
+      });
       console.error("Failed to save rule:", error);
     } finally {
       setSaving(false);
@@ -189,6 +201,11 @@ export default function AutomationPage() {
         fetchRules();
       }
     } catch (error) {
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to delete automation rule",
+      });
       console.error("Failed to delete rule:", error);
     }
   };
@@ -202,6 +219,11 @@ export default function AutomationPage() {
       });
       if (res.ok) fetchRules();
     } catch (error) {
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to toggle rule status",
+      });
       console.error("Failed to toggle rule:", error);
     }
   };
