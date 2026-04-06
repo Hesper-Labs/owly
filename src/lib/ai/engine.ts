@@ -253,3 +253,36 @@ export async function createNewConversation(
     },
   });
 }
+
+export async function generateConversationSummary(conversationId: string): Promise<string> {
+  const config = await getAIConfig();
+  if (!config.apiKey) return "API key missing for summary generation.";
+
+  const conversation = await prisma.conversation.findUnique({
+    where: { id: conversationId },
+    include: { messages: { orderBy: { createdAt: "asc" }, take: 100 } },
+  });
+
+  if (!conversation || conversation.messages.length === 0) return "No messages to summarize.";
+
+  const openai = new OpenAI({ apiKey: config.apiKey });
+  const textMessages = conversation.messages.map(m => `${m.role === 'customer' ? 'Customer' : 'Agent'}: ${m.content}`).join("\n");
+  
+  const response = await openai.chat.completions.create({
+    model: config.model,
+    messages: [
+      { role: "system", content: "You are an AI assistant. Summarize the following customer support conversation in 2-3 sentences. Focus on the main issue and how it was resolved." },
+      { role: "user", content: textMessages }
+    ],
+    max_tokens: 150,
+  });
+
+  const summary = response.choices[0]?.message?.content || "Could not generate summary.";
+  
+  await prisma.conversation.update({
+    where: { id: conversationId },
+    data: { summary }
+  });
+
+  return summary;
+}

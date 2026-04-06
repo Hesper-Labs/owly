@@ -29,7 +29,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci
 
 COPY . .
 

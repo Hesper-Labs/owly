@@ -186,6 +186,21 @@ export default function ConversationsPage() {
     }
   };
 
+  const handleRegenerateSummary = async () => {
+    if (!selectedId) return;
+    try {
+      const res = await fetch(`/api/conversations/${selectedId}/summary`, {
+        method: "POST",
+      });
+      if (res.ok) {
+        fetchConversationDetail(selectedId);
+        fetchConversations();
+      }
+    } catch (error) {
+      console.error("Failed to regenerate summary:", error);
+    }
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -321,6 +336,11 @@ export default function ConversationsPage() {
                               {lastMessage.content}
                             </p>
                           )}
+                          {conv.summary && (
+                            <div className="mt-2 bg-owly-bg border border-owly-border rounded p-2 text-xs text-owly-text-light line-clamp-2">
+                              <strong>AI Summary:</strong> {conv.summary}
+                            </div>
+                          )}
                           <div className="flex items-center gap-2 mt-1.5">
                             <span
                               className={cn(
@@ -443,6 +463,27 @@ export default function ConversationsPage() {
                   </select>
                 </div>
               </div>
+
+              {/* Summary Bar */}
+              {(selectedConversation.summary || selectedConversation.status === 'resolved' || selectedConversation.status === 'closed') && (
+                <div className="px-4 py-3 bg-indigo-50/30 border-b border-owly-border">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <h4 className="text-xs font-semibold text-owly-text flex items-center gap-1">
+                      <span>✨ AI Summary</span>
+                    </h4>
+                    <button 
+                      onClick={handleRegenerateSummary}
+                      disabled={!selectedId}
+                      className="text-xs px-2 py-1 rounded bg-white border border-owly-border hover:bg-owly-bg transition-colors flex items-center gap-1 text-owly-text-light disabled:opacity-50"
+                    >
+                      Regenerate
+                    </button>
+                  </div>
+                  <p className="text-sm text-owly-text-light">
+                    {selectedConversation.summary || "No summary generated yet."}
+                  </p>
+                </div>
+              )}
 
               {/* Tags Bar */}
               {selectedConversation.tags.length > 0 && (

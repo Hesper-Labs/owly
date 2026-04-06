@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { generateConversationSummary } from "@/lib/ai/engine";
 
 export async function GET(
   request: NextRequest,
@@ -84,6 +85,23 @@ export async function PUT(
         },
       },
     });
+
+    // Auto-generate summary when status changes to resolved or closed
+    if (
+      status !== undefined && 
+      (status === "resolved" || status === "closed") && 
+      (existing.status !== "resolved" && existing.status !== "closed") &&
+      !summary
+    ) {
+      // Call summary generation asynchronously so we don't block the UI update as much,
+      // but wait for it so the response has the summary immediately if possible.
+      // Wait, let's just generate it and update the memory item.
+      try {
+        conversation.summary = await generateConversationSummary(id);
+      } catch (err) {
+        console.error("Auto-summary generation failed:", err);
+      }
+    }
 
     if (tagIds && Array.isArray(tagIds)) {
       await prisma.conversationTag.deleteMany({
