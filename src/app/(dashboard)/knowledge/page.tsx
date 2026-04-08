@@ -121,7 +121,7 @@ export default function KnowledgeBasePage() {
       const res = await fetch("/api/knowledge/categories");
       if (res.ok) {
         const data = await res.json();
-        setCategories(data);
+        setCategories(data.data ?? []);
       }
     } catch (err) {
       console.error("Failed to fetch categories:", err);
@@ -136,7 +136,7 @@ export default function KnowledgeBasePage() {
       const res = await fetch(`/api/knowledge/entries?categoryId=${categoryId}`);
       if (res.ok) {
         const data = await res.json();
-        setEntries(data);
+        setEntries(data.data ?? []);
       }
     } catch (err) {
       console.error("Failed to fetch entries:", err);

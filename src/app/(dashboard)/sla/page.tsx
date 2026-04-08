@@ -73,7 +73,7 @@ export default function SLAPage() {
       const res = await fetch("/api/sla");
       if (res.ok) {
         const data = await res.json();
-        setRules(data);
+        setRules(data.data ?? []);
       }
     } catch (error) {
       console.error("Failed to fetch SLA rules:", error);

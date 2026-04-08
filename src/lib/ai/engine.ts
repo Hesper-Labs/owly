@@ -150,11 +150,14 @@ export async function chat(
     const sentiment = analyzeSentiment(userMessage);
     const intent = detectIntent(userMessage);
 
-    // Store metadata for dashboard visibility
+    // Store metadata for dashboard visibility (merge to preserve channel-specific data)
+    const conv = await prisma.conversation.findUnique({ where: { id: conversationId }, select: { metadata: true } });
+    const existingMeta = (typeof conv?.metadata === "object" && conv?.metadata !== null ? conv.metadata : {}) as Record<string, unknown>;
     await prisma.conversation.update({
       where: { id: conversationId },
       data: {
         metadata: {
+          ...existingMeta,
           escalationReason: approval.reason,
           sentiment: sentiment.sentiment,
           intent: intent.intent,

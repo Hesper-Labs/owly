@@ -35,6 +35,7 @@ export function getChannelLabel(channel: string): string {
     whatsapp: "WhatsApp",
     email: "Email",
     phone: "Phone",
+    "zalo-personal": "Zalo Personal",
   };
   return labels[channel] || channel;
 }

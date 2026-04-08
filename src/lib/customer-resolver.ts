@@ -57,6 +57,7 @@ export async function resolveCustomer(
         { email: { equals: customerContact, mode: "insensitive" } },
         { phone: customerContact },
         { whatsapp: customerContact },
+        { zalo: customerContact },
       ],
     },
   });
@@ -79,6 +80,10 @@ async function findByChannelField(channel: string, contact: string) {
       return prisma.customer.findFirst({
         where: { whatsapp: contact },
       });
+    case "zalo-personal":
+      return prisma.customer.findFirst({
+        where: { zalo: contact },
+      });
     case "phone":
       return prisma.customer.findFirst({
         where: { phone: contact },
@@ -100,6 +105,7 @@ async function createCustomer(
       lastContact: new Date(),
       ...(channel === "email" ? { email: contact } : {}),
       ...(channel === "whatsapp" ? { whatsapp: contact } : {}),
+      ...(channel === "zalo-personal" ? { zalo: contact } : {}),
       ...(channel === "phone" ? { phone: contact } : {}),
     },
   });
@@ -125,13 +131,14 @@ async function updateExistingCustomer(
   // Backfill empty channel fields
   const customer = await prisma.customer.findUnique({
     where: { id: customerId },
-    select: { name: true, email: true, phone: true, whatsapp: true },
+    select: { name: true, email: true, phone: true, whatsapp: true, zalo: true },
   });
 
   if (!customer) return;
 
   if (channel === "email" && !customer.email) update.email = contact;
   if (channel === "whatsapp" && !customer.whatsapp) update.whatsapp = contact;
+  if (channel === "zalo-personal" && !customer.zalo) update.zalo = contact;
   if (channel === "phone" && !customer.phone) update.phone = contact;
 
   // Update name if current is "Unknown" and we have a better one

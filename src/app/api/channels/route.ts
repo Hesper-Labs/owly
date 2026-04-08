@@ -3,7 +3,16 @@ import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { requireAuth, isAuthenticated } from "@/lib/route-auth";
 
-const CHANNEL_TYPES = ["whatsapp", "email", "phone", "sms", "telegram"];
+const CHANNEL_TYPES = ["whatsapp", "email", "phone", "sms", "telegram", "zalo-personal"];
+
+// Strip sensitive credential fields from channel config before sending to client
+function sanitizeChannelConfig(channel: { type: string; config: unknown }) {
+  if (channel.type === "zalo-personal" && typeof channel.config === "object" && channel.config !== null) {
+    const { imei, cookie, userAgent, ...safeConfig } = channel.config as Record<string, unknown>;
+    return { ...channel, config: safeConfig };
+  }
+  return channel;
+}
 
 export async function GET(request: NextRequest) {
   const auth = await requireAuth(request, "channels:read");
@@ -17,7 +26,7 @@ export async function GET(request: NextRequest) {
     const channelMap = new Map(channels.map((ch) => [ch.type, ch]));
     const result = CHANNEL_TYPES.map((type) => {
       const existing = channelMap.get(type);
-      if (existing) return existing;
+      if (existing) return sanitizeChannelConfig(existing);
       return {
         id: null,
         type,

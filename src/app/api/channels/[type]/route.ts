@@ -2,8 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { requireAuth, isAuthenticated } from "@/lib/route-auth";
+import { disconnectZalo } from "@/lib/channels/zalo-personal";
 
-const CHANNEL_TYPES = ["whatsapp", "email", "phone", "sms", "telegram"];
+const CHANNEL_TYPES = ["whatsapp", "email", "phone", "sms", "telegram", "zalo-personal"];
+
+// Strip sensitive session data from Zalo config before sending to client
+function sanitizeConfig(type: string, channel: object) {
+  if (type === "zalo-personal" && "config" in channel && typeof (channel as Record<string, unknown>).config === "object") {
+    const cfg = (channel as Record<string, unknown>).config as Record<string, unknown>;
+    const { imei, cookie, userAgent, ...safeConfig } = cfg;
+    return { ...channel, config: safeConfig };
+  }
+  return channel;
+}
 
 type RouteContext = { params: Promise<{ type: string }> };
 
@@ -37,7 +48,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       });
     }
 
-    return NextResponse.json(channel);
+    return NextResponse.json(sanitizeConfig(type, channel));
   } catch (error) {
     logger.error("Failed to fetch channel:", error);
     return NextResponse.json(
@@ -64,22 +75,30 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     const body = await request.json();
     const { isActive, config, status } = body;
 
+    // Merge config with existing to preserve server-written fields (e.g., Zalo credentials)
+    let mergedConfig = config;
+    if (config) {
+      const existing = await prisma.channel.findUnique({ where: { type }, select: { config: true } });
+      const existingConfig = (typeof existing?.config === "object" && existing?.config !== null ? existing.config : {}) as Record<string, unknown>;
+      mergedConfig = { ...existingConfig, ...config };
+    }
+
     const channel = await prisma.channel.upsert({
       where: { type },
       update: {
         isActive: typeof isActive === "boolean" ? isActive : undefined,
-        config: config ?? undefined,
+        config: mergedConfig ?? undefined,
         status: status ?? undefined,
       },
       create: {
         type,
         isActive: typeof isActive === "boolean" ? isActive : false,
-        config: config ?? {},
+        config: mergedConfig ?? {},
         status: status ?? "disconnected",
       },
     });
 
-    return NextResponse.json(channel);
+    return NextResponse.json(sanitizeConfig(type, channel));
   } catch (error) {
     logger.error("Failed to update channel:", error);
     return NextResponse.json(
@@ -116,6 +135,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const channel = await prisma.channel.findUnique({ where: { type } });
 
     if (action === "disconnect") {
+      // Stop active listeners for channels with runtime state
+      if (type === "zalo-personal") {
+        await disconnectZalo();
+      }
+
       const updated = await prisma.channel.upsert({
         where: { type },
         update: { status: "disconnected" },
@@ -126,10 +150,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
           status: "disconnected",
         },
       });
-      return NextResponse.json({
-        ...updated,
-        message: `${type} channel disconnected`,
-      });
+      return NextResponse.json(
+        sanitizeConfig(type, {
+          ...updated,
+          message: `${type} channel disconnected`,
+        })
+      );
     }
 
     if (action === "connect") {
@@ -145,10 +171,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
         data: { status: "connected", isActive: true },
       });
 
-      return NextResponse.json({
-        ...updated,
-        message: `${type} channel connected`,
-      });
+      return NextResponse.json(
+        sanitizeConfig(type, {
+          ...updated,
+          message: `${type} channel connected`,
+        })
+      );
     }
 
     if (action === "test") {
@@ -159,11 +187,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
         );
       }
 
-      return NextResponse.json({
-        success: true,
-        message: `${type} connection test initiated`,
-        channel,
-      });
+      return NextResponse.json(
+        sanitizeConfig(type, {
+          success: true,
+          message: `${type} connection test initiated`,
+          channel,
+        })
+      );
     }
 
     return NextResponse.json({ error: "Unknown action" }, { status: 400 });

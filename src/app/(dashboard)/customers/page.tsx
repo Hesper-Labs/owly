@@ -164,7 +164,7 @@ export default function CustomersPage() {
         const res = await fetch(`/api/customers?${params.toString()}`);
         if (res.ok) {
           const data = await res.json();
-          setCustomers(data.customers);
+          setCustomers(data.data ?? []);
           setPagination(data.pagination);
         }
       } catch (error) {
@@ -658,7 +658,7 @@ export default function CustomersPage() {
                     </span>
                   )}
                   <span className="text-xs text-owly-text-light">
-                    {selectedCustomer._count.notes} notes
+                    {selectedCustomer.notes?.length ?? 0} notes
                   </span>
                 </div>
               </div>

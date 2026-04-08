@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { requireAuth, isAuthenticated } from "@/lib/route-auth";
 import { emitNewMessage } from "@/lib/realtime";
+import { sendZaloMessage } from "@/lib/channels/zalo-personal";
 
 export async function GET(
   request: NextRequest,
@@ -70,7 +71,7 @@ export async function POST(
       );
     }
 
-    const validRoles = ["customer", "assistant", "system"];
+    const validRoles = ["customer", "assistant", "system", "operator"];
     const messageRole = validRoles.includes(role) ? role : "assistant";
 
     const message = await prisma.message.create({
@@ -88,6 +89,11 @@ export async function POST(
 
     emitNewMessage(id, { id: message.id, role: messageRole, content: content.trim() });
 
+    // Deliver message to the actual channel (outbound)
+    if (messageRole === "operator" || messageRole === "assistant") {
+      await deliverToChannel(conversation, content.trim());
+    }
+
     return NextResponse.json(message, { status: 201 });
   } catch (error) {
     logger.error("Failed to create message:", error);
@@ -95,5 +101,31 @@ export async function POST(
       { error: "Failed to create message" },
       { status: 500 }
     );
+  }
+}
+
+// Deliver outbound message to the conversation's channel
+async function deliverToChannel(
+  conversation: { channel: string; metadata: unknown },
+  text: string
+): Promise<void> {
+  try {
+    if (conversation.channel === "zalo-personal") {
+      const meta = (typeof conversation.metadata === "object" && conversation.metadata !== null
+        ? conversation.metadata : {}) as Record<string, unknown>;
+      const threadId = meta.zaloThreadId as string | undefined;
+      if (!threadId) {
+        logger.warn("[Messages] Zalo conversation missing zaloThreadId in metadata");
+        return;
+      }
+      const threadType = meta.zaloThreadType === "group" ? 1 : 0;
+      const sent = await sendZaloMessage(threadId, text, threadType);
+      if (!sent) {
+        logger.warn("[Messages] Failed to deliver message to Zalo", { threadId });
+      }
+    }
+    // Other channels (whatsapp, telegram, sms) can be added here
+  } catch (error) {
+    logger.error("[Messages] Channel delivery failed:", error);
   }
 }

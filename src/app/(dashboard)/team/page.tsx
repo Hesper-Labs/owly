@@ -412,7 +412,7 @@ export default function TeamPage() {
       const res = await fetch("/api/team/departments");
       if (res.ok) {
         const data = await res.json();
-        setDepartments(data);
+        setDepartments(data.data ?? []);
       }
     } catch (err) {
       console.error("Failed to load departments:", err);
@@ -427,7 +427,7 @@ export default function TeamPage() {
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
-        setMembers(data);
+        setMembers(data.data ?? []);
       }
     } catch (err) {
       console.error("Failed to load members:", err);

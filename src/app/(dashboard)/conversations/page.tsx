@@ -57,12 +57,14 @@ const channelIcons: Record<string, React.ElementType> = {
   whatsapp: MessageCircle,
   email: Mail,
   phone: Phone,
+  "zalo-personal": MessageCircle,
 };
 
 const channelColors: Record<string, string> = {
   whatsapp: "text-green-600 bg-green-50",
   email: "text-blue-600 bg-blue-50",
   phone: "text-purple-600 bg-purple-50",
+  "zalo-personal": "text-[#0068FF] bg-blue-50",
 };
 
 const channels = [
@@ -70,6 +72,7 @@ const channels = [
   { value: "whatsapp", label: "WhatsApp" },
   { value: "email", label: "Email" },
   { value: "phone", label: "Phone" },
+  { value: "zalo-personal", label: "Zalo Personal" },
 ];
 
 const statuses = [
@@ -104,8 +107,8 @@ export default function ConversationsPage() {
 
       const res = await fetch(`/api/conversations?${params.toString()}`);
       if (res.ok) {
-        const data = await res.json();
-        setConversations(data);
+        const json = await res.json();
+        setConversations(json.data ?? []);
       }
     } catch (error) {
       console.error("Failed to fetch conversations:", error);
@@ -155,7 +158,7 @@ export default function ConversationsPage() {
       const res = await fetch(`/api/conversations/${selectedId}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: replyText.trim(), role: "admin" }),
+        body: JSON.stringify({ content: replyText.trim(), role: "operator" }),
       });
       if (res.ok) {
         setReplyText("");
@@ -475,7 +478,7 @@ export default function ConversationsPage() {
                 ) : (
                   selectedConversation.messages.map((msg) => {
                     const isAdmin =
-                      msg.role === "admin" || msg.role === "assistant";
+                      msg.role === "admin" || msg.role === "assistant" || msg.role === "operator";
                     const isSystem = msg.role === "system";
 
                     if (isSystem) {
@@ -516,7 +519,7 @@ export default function ConversationsPage() {
                               {isAdmin
                                 ? msg.role === "assistant"
                                   ? "AI Assistant"
-                                  : "Admin"
+                                  : "Operator"
                                 : selectedConversation.customerName}
                             </span>
                           </div>

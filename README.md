@@ -34,7 +34,7 @@
 
 ## What is Owly?
 
-Owly is a **self-hosted AI customer support agent** that small businesses and individuals can run on their own machines -- completely free. Connect your WhatsApp, Email, and Phone channels, add your business knowledge, and let the AI handle customer inquiries 24/7. Owly automatically identifies customers across channels -- someone who emails first and later calls gets a unified profile with full conversation history.
+Owly is a **self-hosted AI customer support agent** that small businesses and individuals can run on their own machines -- completely free. Connect your WhatsApp, Email, Phone, SMS, Telegram, and Zalo channels, add your business knowledge, and let the AI handle customer inquiries 24/7. Owly automatically identifies customers across channels -- someone who emails first and later calls gets a unified profile with full conversation history.
 
 <table>
   <tr>
@@ -53,7 +53,7 @@ Owly is a **self-hosted AI customer support agent** that small businesses and in
     <td width="25%" align="center">
       <br/>
       <strong>Multi-Channel</strong><br/>
-      <sub>WhatsApp, Email, and Phone<br/>from a single dashboard.</sub>
+      <sub>WhatsApp, Email, Phone, SMS,<br/>Telegram, and Zalo.</sub>
       <br/><br/>
     </td>
     <td width="25%" align="center">
@@ -84,8 +84,22 @@ Connect all your customer communication channels in one place.
       <p align="center">IMAP/SMTP with any provider. Branded HTML templates with automatic thread tracking.</p>
     </td>
     <td width="33%">
-      <h4 align="center">Phone</h4>
-      <p align="center">Twilio Voice with OpenAI Whisper (STT) and ElevenLabs (TTS) for natural voice conversations.</p>
+      <h4 align="center">Phone & SMS</h4>
+      <p align="center">Twilio Voice with OpenAI Whisper (STT) and ElevenLabs (TTS) for natural voice conversations, plus SMS support.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <h4 align="center">Telegram</h4>
+      <p align="center">Bot API integration with webhook-based message handling and inline keyboard support.</p>
+    </td>
+    <td width="33%">
+      <h4 align="center">Zalo</h4>
+      <p align="center">Personal account via QR code login with WebSocket listener, credential persistence, and reconnect logic.</p>
+    </td>
+    <td width="33%">
+      <h4 align="center">More Coming</h4>
+      <p align="center">Instagram, Shopify, and WooCommerce integrations on the roadmap.</p>
     </td>
   </tr>
 </table>
@@ -319,6 +333,9 @@ All configuration is done through the admin dashboard -- no config files to edit
 | Phone | Settings > Phone | Twilio Account SID, auth token, phone number |
 | Email | Settings > Email | SMTP and IMAP server configuration |
 | WhatsApp | Channels > WhatsApp | QR code scan or Business API |
+| Telegram | Channels > Telegram | Bot token configuration |
+| Zalo | Channels > Zalo Personal | QR code login with credential persistence |
+| SMS | Settings > Phone | Twilio SMS configuration |
 | Team | Team | Departments, members, expertise areas |
 | SLA | SLA Rules | Response and resolution time targets |
 | Schedule | Business Hours | Weekly availability and offline messages |
@@ -400,8 +417,10 @@ Every API response includes enterprise headers: `X-Request-Id`, `X-RateLimit-Lim
 | **AI** | OpenAI GPT (extensible to Claude, Ollama) |
 | **Voice TTS** | ElevenLabs |
 | **Voice STT** | OpenAI Whisper |
-| **Phone** | Twilio Voice API |
+| **Phone/SMS** | Twilio Voice & SMS API |
 | **WhatsApp** | whatsapp-web.js |
+| **Telegram** | Telegram Bot API |
+| **Zalo** | zca-js |
 | **Auth** | JWT + bcrypt (12 rounds) |
 | **Validation** | Zod schemas on all endpoints |
 | **Testing** | Vitest (274 tests) |
@@ -433,7 +452,7 @@ owly/
 │   │   └── ui/              # 12 reusable components
 │   └── lib/
 │       ├── ai/              # AI engine, tools, types
-│       ├── channels/        # WhatsApp, email, phone
+│       ├── channels/        # WhatsApp, Email, Phone, SMS, Telegram, Zalo
 │       ├── customer-resolver.ts  # Cross-channel identity resolution
 │       ├── errors.ts        # Standardized error responses
 │       ├── logger.ts        # Structured logging
@@ -496,11 +515,13 @@ The Helm chart includes startup/liveness/readiness probes, horizontal pod autosc
 - [x] Webhook delivery retry with HMAC signatures
 - [x] Pagination on all list endpoints
 - [x] Standardized error responses with request tracing
+- [x] Real-time SSE updates
+- [x] Semantic search
+- [x] Role-based access control (RBAC)
+- [x] SMS and Telegram channels
+- [x] Zalo Personal channel (QR login, WebSocket, credential persistence)
 - [ ] Embeddable live chat widget for customer websites
-- [ ] WebSocket real-time updates
-- [ ] Vector embeddings for semantic knowledge search
-- [ ] Role-based access control (RBAC)
-- [ ] Telegram, Instagram, SMS channels
+- [ ] Instagram channel
 - [ ] Shopify / WooCommerce integration
 - [ ] Mobile admin (PWA)
 - [ ] Multi-tenant / white-label
