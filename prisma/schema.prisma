@@ -332,6 +332,7 @@ model Customer {
   email         String         @default("")
   phone         String         @default("")
   whatsapp      String         @default("")
+  zalo          String         @default("")
   tags          String         @default("") // comma-separated
   isBlocked     Boolean        @default(false)
   notes         CustomerNote[]
@@ -345,6 +346,7 @@ model Customer {
   @@index([email])
   @@index([phone])
   @@index([whatsapp])
+  @@index([zalo])
   @@index([lastContact])
 }
 

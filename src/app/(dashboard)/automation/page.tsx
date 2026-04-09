@@ -101,7 +101,7 @@ export default function AutomationPage() {
       const res = await fetch(`/api/automation?${params.toString()}`);
       if (res.ok) {
         const data = await res.json();
-        setRules(data);
+        setRules(data.data ?? []);
       }
     } catch (error) {
       console.error("Failed to fetch automation rules:", error);

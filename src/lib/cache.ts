@@ -35,7 +35,8 @@ async function getRedisClient() {
 
   try {
     // Dynamic import - only loads if Redis URL is configured
-    const { createClient } = await import("redis" as string);
+    // @ts-expect-error -- redis is an optional dependency, resolved at runtime via serverExternalPackages
+    const { createClient } = await import("redis");
     const client = createClient({ url: redisUrl });
     await client.connect();
     redisClient = client;
@@ -57,11 +58,12 @@ export async function cacheGet(key: string): Promise<string | null> {
     return redis.get(`owly:${key}`);
   }
 
-  // In-memory fallback
-  const entry = memoryStore.get(key);
+  // In-memory fallback (use same prefix as Redis for backend-switch consistency)
+  const prefixed = `owly:${key}`;
+  const entry = memoryStore.get(prefixed);
   if (!entry) return null;
   if (entry.expiresAt && Date.now() > entry.expiresAt) {
-    memoryStore.delete(key);
+    memoryStore.delete(prefixed);
     return null;
   }
   return entry.value;
@@ -86,8 +88,8 @@ export async function cacheSet(
     return;
   }
 
-  // In-memory fallback
-  memoryStore.set(key, {
+  // In-memory fallback (use same prefix as Redis for backend-switch consistency)
+  memoryStore.set(`owly:${key}`, {
     value,
     expiresAt: ttlSeconds ? Date.now() + ttlSeconds * 1000 : null,
   });
@@ -104,7 +106,7 @@ export async function cacheDel(key: string): Promise<void> {
     return;
   }
 
-  memoryStore.delete(key);
+  memoryStore.delete(`owly:${key}`);
 }
 
 /**

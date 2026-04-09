@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { Header } from "@/components/layout/header";
 import { StatCard } from "@/components/ui/stat-card";
 import { OnboardingChecklist } from "@/components/ui/onboarding-checklist";
@@ -57,14 +59,23 @@ async function getStats() {
   };
 }
 
-const channelIcons: Record<string, React.ElementType> = {
-  whatsapp: MessageCircle,
-  email: Mail,
-  phone: Phone,
-};
+const channelDefaults = [
+  { type: "whatsapp", name: "WhatsApp", icon: MessageCircle, color: "text-green-600" },
+  { type: "email", name: "Email", icon: Mail, color: "text-blue-600" },
+  { type: "phone", name: "Phone", icon: Phone, color: "text-purple-600" },
+  { type: "zalo-personal", name: "Zalo", icon: MessageCircle, color: "text-[#0068FF]" },
+];
+
+const channelIcons: Record<string, React.ElementType> = Object.fromEntries(
+  channelDefaults.map((ch) => [ch.type, ch.icon])
+);
 
 export default async function DashboardPage() {
-  const stats = await getStats();
+  const [stats, dbChannels] = await Promise.all([
+    getStats(),
+    prisma.channel.findMany({ select: { type: true, status: true } }),
+  ]);
+  const statusMap = new Map(dbChannels.map((ch) => [ch.type, ch.status]));
 
   return (
     <>
@@ -172,32 +183,34 @@ export default async function DashboardPage() {
                 </h3>
               </div>
               <div className="p-5 space-y-4">
-                {[
-                  {
-                    name: "WhatsApp",
-                    icon: MessageCircle,
-                    color: "text-green-600",
-                  },
-                  { name: "Email", icon: Mail, color: "text-blue-600" },
-                  { name: "Phone", icon: Phone, color: "text-purple-600" },
-                ].map((channel) => (
-                  <div
-                    key={channel.name}
-                    className="flex items-center justify-between"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <channel.icon
-                        className={`h-4 w-4 ${channel.color}`}
-                      />
-                      <span className="text-sm font-medium">
-                        {channel.name}
+                {channelDefaults.map((channel) => {
+                  const status = statusMap.get(channel.type) || "disconnected";
+                  const isConnected = status === "connected";
+                  return (
+                    <div
+                      key={channel.type}
+                      className="flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <channel.icon
+                          className={`h-4 w-4 ${channel.color}`}
+                        />
+                        <span className="text-sm font-medium">
+                          {channel.name}
+                        </span>
+                      </div>
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                          isConnected
+                            ? "bg-green-50 text-green-600"
+                            : "bg-red-50 text-red-600"
+                        }`}
+                      >
+                        {isConnected ? "Connected" : "Disconnected"}
                       </span>
                     </div>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-red-50 text-red-600 font-medium">
-                      Disconnected
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 

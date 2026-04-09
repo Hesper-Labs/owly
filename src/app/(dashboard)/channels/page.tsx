@@ -17,6 +17,7 @@ import {
   XCircle,
   Eye,
   EyeOff,
+  AlertTriangle,
 } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
@@ -696,6 +697,243 @@ function PhoneCard({
 }
 
 // ---------------------------------------------------------------------------
+// Zalo Personal Card
+// ---------------------------------------------------------------------------
+
+function ZaloPersonalCard({
+  channel,
+  onSave,
+  onAction,
+  saving,
+}: {
+  channel: ChannelData;
+  onSave: (type: string, config: Record<string, unknown>, isActive: boolean) => void;
+  onAction: (type: string, action: string) => Promise<void>;
+  saving: boolean;
+}) {
+  const [isActive, setIsActive] = useState(channel.isActive);
+  const [qrImage, setQrImage] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
+  const cfg = channel.config as Record<string, unknown>;
+  const [filterMode, setFilterMode] = useState<string>((cfg.filterMode as string) || "disabled");
+  const [filterListText, setFilterListText] = useState<string>(
+    Array.isArray(cfg.filterList) ? (cfg.filterList as string[]).join("\n") : ""
+  );
+  const isConnected = channel.status === "connected";
+  const isQrPending = channel.status === "qr_pending" || !!qrImage;
+
+  // Poll for status changes after QR scan
+  useEffect(() => {
+    if (!qrImage) return;
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch("/api/channels/zalo-personal");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.status === "connected") {
+          setQrImage(null);
+        }
+      } catch {
+        // ignore polling errors
+      }
+    }, 3000);
+    const timeout = setTimeout(() => {
+      setQrImage(null);
+      clearInterval(interval);
+    }, 120000); // 2 min timeout
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [qrImage]);
+
+  const handleQrLogin = async () => {
+    setActionLoading(true);
+    try {
+      const res = await fetch("/api/channels/zalo-personal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "qr-login" }),
+      });
+      const data = await res.json();
+      if (data.success && data.qrImage) {
+        setQrImage(data.qrImage);
+      }
+    } catch {
+      // handled by parent toast
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDisconnect = async () => {
+    setActionLoading(true);
+    await onAction("zalo-personal", "disconnect");
+    setQrImage(null);
+    setActionLoading(false);
+  };
+
+  return (
+    <div className="bg-owly-surface rounded-xl border border-owly-border overflow-hidden">
+      {/* Header */}
+      <div className="px-5 py-4 border-b border-owly-border">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-lg bg-[#0068FF]/10 text-[#0068FF]">
+              <MessageCircle className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-owly-text">Zalo Personal</h3>
+              <p className="text-xs text-owly-text-light mt-0.5">
+                Messaging via Zalo personal account
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <StatusBadge status={channel.status} />
+            <Toggle enabled={isActive} onChange={setIsActive} />
+          </div>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="p-5 space-y-4">
+        {isConnected ? (
+          <div className="rounded-lg border border-green-200 bg-green-50 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              <span className="text-sm font-medium text-green-700">Session Active</span>
+            </div>
+            <button
+              type="button"
+              disabled={actionLoading}
+              onClick={handleDisconnect}
+              className="mt-2 flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
+            >
+              <WifiOff className="h-3.5 w-3.5" />
+              Disconnect
+            </button>
+          </div>
+        ) : isQrPending && qrImage ? (
+          <div className="rounded-lg border border-owly-border bg-owly-bg p-6 flex flex-col items-center">
+            <img
+              src={qrImage}
+              alt="Zalo QR Code"
+              className="w-40 h-40 rounded-lg border border-owly-border mb-3"
+            />
+            <p className="text-xs text-owly-text-light text-center max-w-[220px]">
+              Scan this QR code with Zalo on your phone
+            </p>
+            <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
+              <AlertTriangle className="h-3 w-3" />
+              Only one session can be active at a time
+            </p>
+            <button
+              type="button"
+              onClick={() => setQrImage(null)}
+              className="mt-3 flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-owly-text-light bg-owly-bg border border-owly-border rounded-lg hover:bg-owly-surface transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <div className="rounded-lg border border-owly-border bg-owly-bg p-6 flex flex-col items-center">
+            <div className="w-40 h-40 bg-white border-2 border-dashed border-owly-border rounded-lg flex items-center justify-center mb-3">
+              <div className="text-center">
+                <QrCode className="h-10 w-10 text-owly-text-light/40 mx-auto mb-1" />
+                <p className="text-xs text-owly-text-light/60">QR Code</p>
+              </div>
+            </div>
+            <p className="text-xs text-owly-text-light text-center max-w-[220px]">
+              Scan with Zalo app to connect your account
+            </p>
+            <button
+              type="button"
+              disabled={actionLoading}
+              onClick={handleQrLogin}
+              className="mt-3 flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-[#0068FF] rounded-lg hover:bg-[#0055DD] transition-colors disabled:opacity-50"
+            >
+              {actionLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Wifi className="h-4 w-4" />
+              )}
+              Connect via QR
+            </button>
+          </div>
+        )}
+
+        {/* Warning banner */}
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 flex items-start gap-2">
+          <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+          <p className="text-xs text-amber-700">
+            Uses unofficial API — your account may be restricted by Zalo. Opening Zalo Web in a browser will disconnect this session.
+          </p>
+        </div>
+
+        {/* Allowlist / Denylist filter */}
+        <div>
+          <label className="block text-xs font-medium text-owly-text-light mb-2">
+            Message Filter
+          </label>
+          <select
+            value={filterMode}
+            onChange={(e) => setFilterMode(e.target.value)}
+            className="w-full px-3 py-2 text-sm border border-owly-border rounded-lg bg-owly-bg text-owly-text focus:outline-none focus:ring-2 focus:ring-owly-primary/30 focus:border-owly-primary transition-colors"
+          >
+            <option value="disabled">Disabled — respond to all</option>
+            <option value="allowlist">Allowlist — only listed IDs</option>
+            <option value="denylist">Denylist — block listed IDs</option>
+          </select>
+          {filterMode !== "disabled" && (
+            <div className="mt-2">
+              <textarea
+                value={filterListText}
+                onChange={(e) => setFilterListText(e.target.value)}
+                placeholder="Enter Zalo user or group IDs, one per line"
+                rows={3}
+                className="w-full px-3 py-2 text-sm border border-owly-border rounded-lg bg-owly-bg text-owly-text placeholder:text-owly-text-light/50 focus:outline-none focus:ring-2 focus:ring-owly-primary/30 focus:border-owly-primary transition-colors font-mono"
+              />
+              <p className="text-xs text-owly-text-light mt-1">
+                {filterMode === "allowlist"
+                  ? "Only these IDs will receive AI responses"
+                  : "These IDs will be ignored by the bot"}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="px-5 py-3 border-t border-owly-border bg-owly-bg/50">
+        <button
+          type="button"
+          disabled={saving}
+          onClick={() =>
+            onSave(
+              "zalo-personal",
+              {
+                filterMode,
+                filterList: filterListText.split("\n").map((s) => s.trim()).filter(Boolean),
+              },
+              isActive
+            )
+          }
+          className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-owly-primary rounded-lg hover:bg-owly-primary-dark disabled:opacity-50 transition-colors"
+        >
+          {saving ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Save className="h-4 w-4" />
+          )}
+          Save
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Main Page
 // ---------------------------------------------------------------------------
 
@@ -821,6 +1059,12 @@ export default function ChannelsPage() {
             />
             <PhoneCard
               channel={getChannel("phone")}
+              onSave={handleSave}
+              onAction={handleAction}
+              saving={saving}
+            />
+            <ZaloPersonalCard
+              channel={getChannel("zalo-personal")}
               onSave={handleSave}
               onAction={handleAction}
               saving={saving}

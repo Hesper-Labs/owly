@@ -22,7 +22,7 @@ export const setupSchema = z.object({
 
 // Conversations
 export const createConversationSchema = z.object({
-  channel: z.enum(["whatsapp", "email", "phone", "sms", "telegram", "api", "widget"]),
+  channel: z.enum(["whatsapp", "email", "phone", "sms", "telegram", "zalo-personal", "api", "widget"]),
   customerName: z.string().max(200).optional(),
   customerContact: z.string().max(500).optional(),
   status: z.enum(["active", "resolved", "closed", "escalated"]).optional(),
@@ -104,6 +104,7 @@ export const createCustomerSchema = z.object({
   email: z.string().email().max(300).optional(),
   phone: z.string().max(50).optional(),
   whatsapp: z.string().max(50).optional(),
+  zalo: z.string().max(50).optional(),
   tags: z.string().max(500).optional(),
   isBlocked: z.boolean().default(false),
   notes: z.string().max(5000).nullable().optional(),
@@ -210,6 +211,16 @@ export const createApiKeySchema = z.object({
 export const createNoteSchema = z.object({
   content: z.string().min(1, "Content is required").max(10000),
   authorName: z.string().max(200).optional(),
+});
+
+// Zalo channel
+export const zaloActionSchema = z.object({
+  action: z.enum(["qr-login", "connect", "disconnect"]),
+});
+
+export const zaloConfigUpdateSchema = z.object({
+  isActive: z.boolean().optional(),
+  config: z.record(z.string(), z.unknown()).optional(),
 });
 
 // Pagination helper

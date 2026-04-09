@@ -1,3 +1,44 @@
+import { randomBytes, createCipheriv, createDecipheriv } from "crypto";
+
+const ALGO = "aes-256-gcm";
+const IV_LEN = 12;
+const TAG_LEN = 16;
+
+function getEncryptionKey(): Buffer {
+  const key = process.env.CREDENTIAL_ENCRYPTION_KEY;
+  if (!key) throw new Error("CREDENTIAL_ENCRYPTION_KEY env var is required for credential storage");
+  const buf = Buffer.from(key, "hex");
+  if (buf.length !== 32) throw new Error("CREDENTIAL_ENCRYPTION_KEY must be 64 hex chars (32 bytes)");
+  return buf;
+}
+
+/**
+ * Encrypt a string with AES-256-GCM.
+ * Returns base64-encoded iv:ciphertext:tag.
+ */
+export function encryptCredential(plaintext: string): string {
+  const key = getEncryptionKey();
+  const iv = randomBytes(IV_LEN);
+  const cipher = createCipheriv(ALGO, key, iv);
+  const encrypted = Buffer.concat([cipher.update(plaintext, "utf8"), cipher.final()]);
+  const tag = cipher.getAuthTag();
+  return Buffer.concat([iv, encrypted, tag]).toString("base64");
+}
+
+/**
+ * Decrypt a string encrypted with encryptCredential.
+ */
+export function decryptCredential(encoded: string): string {
+  const key = getEncryptionKey();
+  const buf = Buffer.from(encoded, "base64");
+  const iv = buf.subarray(0, IV_LEN);
+  const tag = buf.subarray(buf.length - TAG_LEN);
+  const ciphertext = buf.subarray(IV_LEN, buf.length - TAG_LEN);
+  const decipher = createDecipheriv(ALGO, key, iv);
+  decipher.setAuthTag(tag);
+  return decipher.update(ciphertext, undefined, "utf8") + decipher.final("utf8");
+}
+
 /**
  * Mask a sensitive string for safe display.
  * Returns "***" if the value is non-empty, empty string otherwise.
@@ -54,4 +95,25 @@ export function escapeHtml(text: string): string {
  */
 export function sanitizeEmailSubject(subject: string): string {
   return subject.replace(/[\r\n]/g, " ").trim();
+}
+
+// Allowlist of safe Zalo config fields that can be exposed in API responses.
+// New credential fields from zca-js are automatically excluded.
+export const ZALO_SAFE_CONFIG_FIELDS = ["filterMode", "filterList"];
+
+/**
+ * Strip Zalo credential fields from channel config for API responses.
+ * Uses allowlist — only known-safe fields pass through.
+ */
+export function sanitizeChannelCredentials<T extends Record<string, unknown>>(channel: T): T {
+  const type = "type" in channel ? channel.type : undefined;
+  if (type !== "zalo-personal") return channel;
+  const config = channel.config;
+  if (typeof config !== "object" || config === null) return channel;
+  const cfg = config as Record<string, unknown>;
+  const safe: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(cfg)) {
+    if (ZALO_SAFE_CONFIG_FIELDS.includes(k)) safe[k] = v;
+  }
+  return { ...channel, config: safe };
 }

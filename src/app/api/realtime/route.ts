@@ -1,9 +1,13 @@
 import { NextRequest } from "next/server";
 import { subscribe } from "@/lib/realtime";
+import { requireAuth, isAuthenticated } from "@/lib/route-auth";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
+  const auth = await requireAuth(request, "messages:read");
+  if (!isAuthenticated(auth)) return auth;
+
   const channel = request.nextUrl.searchParams.get("channel") || "global";
 
   const stream = new ReadableStream({

@@ -429,7 +429,7 @@ export default function WebhooksPage() {
     try {
       const res = await fetch("/api/webhooks");
       const data = await res.json();
-      setWebhooks(data);
+      setWebhooks(data.data ?? []);
     } catch {
       // silently fail
     } finally {
