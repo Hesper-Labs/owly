@@ -2,17 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { requireAuth, isAuthenticated } from "@/lib/route-auth";
+import { sanitizeChannelCredentials } from "@/lib/security";
 
 const CHANNEL_TYPES = ["whatsapp", "email", "phone", "sms", "telegram", "zalo-personal"];
-
-// Strip sensitive credential fields from channel config before sending to client
-function sanitizeChannelConfig(channel: { type: string; config: unknown }) {
-  if (channel.type === "zalo-personal" && typeof channel.config === "object" && channel.config !== null) {
-    const { imei, cookie, userAgent, ...safeConfig } = channel.config as Record<string, unknown>;
-    return { ...channel, config: safeConfig };
-  }
-  return channel;
-}
 
 export async function GET(request: NextRequest) {
   const auth = await requireAuth(request, "channels:read");
@@ -26,7 +18,7 @@ export async function GET(request: NextRequest) {
     const channelMap = new Map(channels.map((ch) => [ch.type, ch]));
     const result = CHANNEL_TYPES.map((type) => {
       const existing = channelMap.get(type);
-      if (existing) return sanitizeChannelConfig(existing);
+      if (existing) return sanitizeChannelCredentials(existing as Record<string, unknown>);
       return {
         id: null,
         type,
@@ -77,7 +69,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(channel, { status: 200 });
+    return NextResponse.json(sanitizeChannelCredentials(channel as Record<string, unknown>), { status: 200 });
   } catch (error) {
     logger.error("Failed to save channel:", error);
     return NextResponse.json(

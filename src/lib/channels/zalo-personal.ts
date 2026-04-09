@@ -4,9 +4,14 @@ import { chat, createNewConversation } from "@/lib/ai/engine";
 import { logger } from "@/lib/logger";
 import { resolveCustomer, normalizePhone } from "@/lib/customer-resolver";
 import { emitNewMessage } from "@/lib/realtime";
+import { encryptCredential, decryptCredential } from "@/lib/security";
+import { cacheGet, cacheSet } from "@/lib/cache";
 
 // ---------------------------------------------------------------------------
 // State
+// WARNING: Module-level mutable state — assumes single Node.js process.
+// In serverless/multi-instance deployments these will reset on cold start.
+// Consider migrating to Redis or a shared store if horizontal scaling is needed.
 // ---------------------------------------------------------------------------
 
 let zaloApi: API | null = null;
@@ -15,6 +20,7 @@ let connectionStatus: "disconnected" | "qr_pending" | "connected" = "disconnecte
 let reconnectAttempts = 0;
 let qrLoginInProgress = false;
 const MAX_RECONNECT = 3;
+const QR_LOGIN_TIMEOUT_MS = 1 * 60 * 1000; // 1 minutes
 
 // ---------------------------------------------------------------------------
 // Public getters
@@ -52,10 +58,10 @@ export async function connectZalo(): Promise<{ success: boolean; error?: string 
 
     const zalo = new Zalo({ selfListen: true });
     const api = await zalo.login({
-      imei: config.imei as string,
+      imei: decryptCredential(config.imei as string),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      cookie: config.cookie as any,
-      userAgent: config.userAgent as string,
+      cookie: JSON.parse(decryptCredential(config.cookie as string)) as any,
+      userAgent: decryptCredential(config.userAgent as string),
     });
 
     zaloApi = api;
@@ -98,6 +104,18 @@ export async function startZaloQRLogin(): Promise<{ success: boolean; qrImage?: 
 
   return new Promise((resolve) => {
     const zalo = new Zalo({ selfListen: true });
+    let resolved = false;
+
+    const timeout = setTimeout(() => {
+      if (!resolved) {
+        resolved = true;
+        qrLoginInProgress = false;
+        connectionStatus = "disconnected";
+        qrImageBase64 = null;
+        logger.warn("[Zalo] QR login timed out");
+        resolve({ success: false, error: "QR login timed out. Please try again." });
+      }
+    }, QR_LOGIN_TIMEOUT_MS);
 
     zalo.loginQR({}, (event) => {
       switch (event.type) {
@@ -106,7 +124,10 @@ export async function startZaloQRLogin(): Promise<{ success: boolean; qrImage?: 
           const raw = qrData.image;
           qrImageBase64 = raw.startsWith("data:") ? raw : `data:image/png;base64,${raw}`;
           logger.info("[Zalo] QR code generated");
-          resolve({ success: true, qrImage: qrImageBase64 });
+          if (!resolved) {
+            resolved = true;
+            resolve({ success: true, qrImage: qrImageBase64 });
+          }
           break;
         }
 
@@ -114,6 +135,7 @@ export async function startZaloQRLogin(): Promise<{ success: boolean; qrImage?: 
           logger.info("[Zalo] QR code expired");
           qrImageBase64 = null;
           connectionStatus = "disconnected";
+          qrLoginInProgress = false;
           break;
         }
 
@@ -126,6 +148,7 @@ export async function startZaloQRLogin(): Promise<{ success: boolean; qrImage?: 
           logger.info("[Zalo] QR code declined");
           qrImageBase64 = null;
           connectionStatus = "disconnected";
+          qrLoginInProgress = false;
           break;
         }
 
@@ -140,6 +163,7 @@ export async function startZaloQRLogin(): Promise<{ success: boolean; qrImage?: 
       }
     })
       .then((api) => {
+        clearTimeout(timeout);
         zaloApi = api;
         connectionStatus = "connected";
         qrImageBase64 = null;
@@ -158,6 +182,7 @@ export async function startZaloQRLogin(): Promise<{ success: boolean; qrImage?: 
         logger.info("[Zalo] Login complete, listener started");
       })
       .catch((err) => {
+        clearTimeout(timeout);
         logger.error("[Zalo] QR login failed:", err);
         connectionStatus = "disconnected";
         qrImageBase64 = null;
@@ -384,11 +409,9 @@ async function handleSelfMessage(threadId: string, content: string): Promise<voi
 // Internal: enrich customer with full Zalo profile
 // ---------------------------------------------------------------------------
 
-const ENRICH_CACHE_TTL = 60 * 60 * 1000; // 1 hour
-
 async function enrichCustomerFromZalo(api: API, customerId: string, zaloUserId: string): Promise<void> {
-  const cacheKey = `enrich:${customerId}`;
-  if (getCached(cacheKey)) return; // Already enriched recently
+  const cacheKey = `zalo:enrich:${customerId}`;
+  if (await cacheGet(cacheKey)) return; // Already enriched recently
 
   const res = await api.getUserInfo(zaloUserId);
   const profiles = res?.changed_profiles ?? res;
@@ -449,44 +472,17 @@ async function enrichCustomerFromZalo(api: API, customerId: string, zaloUserId: 
 
   // Only cache if we got meaningful profile data (so we retry on empty profiles)
   if (Object.keys(zaloProfile).length > 0) {
-    setCache(cacheKey, "1", ENRICH_CACHE_TTL);
+    await cacheSet(cacheKey, "1", 3600);
   }
   logger.debug("[Zalo] Enriched customer profile", { customerId, fields: Object.keys(zaloProfile), phoneSaved: !!(!customer.phone && validPhone) });
 }
 
 // ---------------------------------------------------------------------------
-// Internal: name resolution with TTL cache
+// Internal: name resolution with cache
 // ---------------------------------------------------------------------------
 
-const nameCache = new Map<string, { value: string; expires: number }>();
-const NAME_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-const CACHE_MAX_SIZE = 500;
-
-function getCached(key: string): string | null {
-  const entry = nameCache.get(key);
-  if (entry && Date.now() < entry.expires) return entry.value;
-  if (entry) nameCache.delete(key);
-  return null;
-}
-
-function setCache(key: string, value: string, ttl: number = NAME_CACHE_TTL): void {
-  // Evict expired entries when cache grows too large
-  if (nameCache.size >= CACHE_MAX_SIZE) {
-    const now = Date.now();
-    for (const [k, v] of nameCache) {
-      if (now >= v.expires) nameCache.delete(k);
-    }
-    // If still too large after eviction, clear oldest half
-    if (nameCache.size >= CACHE_MAX_SIZE) {
-      const entries = [...nameCache.entries()].sort((a, b) => a[1].expires - b[1].expires);
-      for (let i = 0; i < entries.length / 2; i++) nameCache.delete(entries[i][0]);
-    }
-  }
-  nameCache.set(key, { value, expires: Date.now() + ttl });
-}
-
 async function resolveUserName(api: API, userId: string): Promise<string> {
-  const cached = getCached(`user:${userId}`);
+  const cached = await cacheGet(`zalo:user:${userId}`);
   if (cached) return cached;
 
   try {
@@ -497,7 +493,7 @@ async function resolveUserName(api: API, userId: string): Promise<string> {
     const profile = profiles?.[userId] || profiles?.[`${userId}_0`];
     const raw = profile?.displayName || profile?.zaloName || (profile as Record<string, unknown>)?.name;
     const name = typeof raw === "string" && raw ? raw : userId;
-    setCache(`user:${userId}`, name);
+    await cacheSet(`zalo:user:${userId}`, name, 300);
     return name;
   } catch (err) {
     logger.warn("[Zalo] Failed to resolve user name", { userId, error: String(err) });
@@ -506,14 +502,14 @@ async function resolveUserName(api: API, userId: string): Promise<string> {
 }
 
 async function resolveGroupName(api: API, groupId: string): Promise<string> {
-  const cached = getCached(`group:${groupId}`);
+  const cached = await cacheGet(`zalo:group:${groupId}`);
   if (cached) return cached;
 
   try {
     const res = await api.getGroupInfo(groupId);
     const info = res?.gridInfoMap?.[groupId];
     const name = info?.name || "Unknown Group";
-    setCache(`group:${groupId}`, name);
+    await cacheSet(`zalo:group:${groupId}`, name, 300);
     return name;
   } catch (err) {
     logger.warn("[Zalo] Failed to resolve group name", { groupId, error: String(err) });
@@ -563,7 +559,7 @@ async function updateThreadMetadata(conversationId: string, threadLabel: "group"
 async function isAllowedByFilter(senderId: string, threadId: string): Promise<boolean> {
   try {
     // Use cached filter config (30s TTL) to avoid DB read per message
-    const cached = getCached("filter:config");
+    const cached = await cacheGet("zalo:filter:config");
     let filterMode: string;
     let filterList: string[];
 
@@ -576,7 +572,7 @@ async function isAllowedByFilter(senderId: string, threadId: string): Promise<bo
       const cfg = (typeof channel?.config === "object" && channel?.config !== null ? channel.config : {}) as Record<string, unknown>;
       filterMode = (cfg.filterMode as string) || "disabled";
       filterList = Array.isArray(cfg.filterList) ? (cfg.filterList as string[]) : [];
-      setCache("filter:config", JSON.stringify({ filterMode, filterList }), 30_000);
+      await cacheSet("zalo:filter:config", JSON.stringify({ filterMode, filterList }), 30);
     }
 
     if (filterMode === "disabled") return true;
@@ -600,9 +596,9 @@ async function saveCredentials(creds: { cookie: unknown; imei: string; userAgent
   const existingConfig = (typeof existing?.config === "object" && existing?.config !== null ? existing.config : {}) as Record<string, unknown>;
   const mergedConfig = {
     ...existingConfig,
-    imei: creds.imei,
-    cookie: JSON.parse(JSON.stringify(creds.cookie)),
-    userAgent: creds.userAgent,
+    imei: encryptCredential(creds.imei),
+    cookie: encryptCredential(JSON.stringify(creds.cookie)),
+    userAgent: encryptCredential(creds.userAgent),
   };
 
   await prisma.channel.upsert({

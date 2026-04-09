@@ -3,18 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { requireAuth, isAuthenticated } from "@/lib/route-auth";
 import { disconnectZalo } from "@/lib/channels/zalo-personal";
+import { sanitizeChannelCredentials } from "@/lib/security";
 
 const CHANNEL_TYPES = ["whatsapp", "email", "phone", "sms", "telegram", "zalo-personal"];
-
-// Strip sensitive session data from Zalo config before sending to client
-function sanitizeConfig(type: string, channel: object) {
-  if (type === "zalo-personal" && "config" in channel && typeof (channel as Record<string, unknown>).config === "object") {
-    const cfg = (channel as Record<string, unknown>).config as Record<string, unknown>;
-    const { imei, cookie, userAgent, ...safeConfig } = cfg;
-    return { ...channel, config: safeConfig };
-  }
-  return channel;
-}
 
 type RouteContext = { params: Promise<{ type: string }> };
 
@@ -48,7 +39,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       });
     }
 
-    return NextResponse.json(sanitizeConfig(type, channel));
+    return NextResponse.json(sanitizeChannelCredentials(channel as Record<string, unknown>));
   } catch (error) {
     logger.error("Failed to fetch channel:", error);
     return NextResponse.json(
@@ -80,7 +71,11 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     if (config) {
       const existing = await prisma.channel.findUnique({ where: { type }, select: { config: true } });
       const existingConfig = (typeof existing?.config === "object" && existing?.config !== null ? existing.config : {}) as Record<string, unknown>;
-      mergedConfig = { ...existingConfig, ...config };
+      // Strip credential fields from client input — these are server-managed (encrypted)
+      const safeClientConfig = Object.fromEntries(
+        Object.entries(config as Record<string, unknown>).filter(([k]) => !["imei", "cookie", "userAgent"].includes(k))
+      );
+      mergedConfig = { ...existingConfig, ...safeClientConfig };
     }
 
     const channel = await prisma.channel.upsert({
@@ -98,7 +93,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       },
     });
 
-    return NextResponse.json(sanitizeConfig(type, channel));
+    return NextResponse.json(sanitizeChannelCredentials(channel as Record<string, unknown>));
   } catch (error) {
     logger.error("Failed to update channel:", error);
     return NextResponse.json(
@@ -151,10 +146,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
         },
       });
       return NextResponse.json(
-        sanitizeConfig(type, {
+        sanitizeChannelCredentials({
           ...updated,
           message: `${type} channel disconnected`,
-        })
+        } as Record<string, unknown>)
       );
     }
 
@@ -172,10 +167,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
       });
 
       return NextResponse.json(
-        sanitizeConfig(type, {
+        sanitizeChannelCredentials({
           ...updated,
           message: `${type} channel connected`,
-        })
+        } as Record<string, unknown>)
       );
     }
 
@@ -187,13 +182,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
         );
       }
 
-      return NextResponse.json(
-        sanitizeConfig(type, {
+      return NextResponse.json({
           success: true,
           message: `${type} connection test initiated`,
-          channel,
-        })
-      );
+          channel: sanitizeChannelCredentials(channel as Record<string, unknown>),
+        });
     }
 
     return NextResponse.json({ error: "Unknown action" }, { status: 400 });

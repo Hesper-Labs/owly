@@ -2,22 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth, isAuthenticated } from "@/lib/route-auth";
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
+import { sanitizeChannelCredentials } from "@/lib/security";
 import {
   getZaloStatus,
   connectZalo,
   startZaloQRLogin,
   disconnectZalo,
 } from "@/lib/channels/zalo-personal";
-
-/** Strip credentials from config before sending to client */
-function sanitize(channel: object) {
-  if ("config" in channel && typeof (channel as Record<string, unknown>).config === "object") {
-    const cfg = (channel as Record<string, unknown>).config as Record<string, unknown>;
-    const { imei, cookie, userAgent, ...safeConfig } = cfg;
-    return { ...channel, config: safeConfig };
-  }
-  return channel;
-}
 
 export async function GET(request: NextRequest) {
   const auth = await requireAuth(request, "channels:read");
@@ -40,7 +31,11 @@ export async function PUT(request: NextRequest) {
     if (config) {
       const existing = await prisma.channel.findUnique({ where: { type: "zalo-personal" }, select: { config: true } });
       const existingConfig = (typeof existing?.config === "object" && existing?.config !== null ? existing.config : {}) as Record<string, unknown>;
-      mergedConfig = { ...existingConfig, ...config };
+      // Strip credential fields from client input — these are server-managed (encrypted)
+      const safeClientConfig = Object.fromEntries(
+        Object.entries(config as Record<string, unknown>).filter(([k]) => !["imei", "cookie", "userAgent"].includes(k))
+      );
+      mergedConfig = { ...existingConfig, ...safeClientConfig };
     }
 
     const channel = await prisma.channel.upsert({
@@ -57,7 +52,7 @@ export async function PUT(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(sanitize(channel));
+    return NextResponse.json(sanitizeChannelCredentials(channel as Record<string, unknown>));
   } catch (error) {
     logger.error("[Zalo] Failed to update channel:", error);
     return NextResponse.json({ error: "Failed to update channel" }, { status: 500 });
