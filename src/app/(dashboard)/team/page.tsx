@@ -1,5 +1,7 @@
 "use client";
 
+import { useToast } from "@/components/ui/toast";
+
 import { Header } from "@/components/layout/header";
 import { cn } from "@/lib/utils";
 import {
@@ -379,6 +381,7 @@ function getRoleBadge(role: string) {
 // ---------------------------------------------------------------------------
 
 export default function TeamPage() {
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<"departments" | "members">(
     "departments"
   );
@@ -415,7 +418,12 @@ export default function TeamPage() {
         setDepartments(data);
       }
     } catch (err) {
-      console.error("Failed to load departments:", err);
+      console.error(err);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to load departments",
+      });
     }
   }, []);
 
@@ -430,7 +438,12 @@ export default function TeamPage() {
         setMembers(data);
       }
     } catch (err) {
-      console.error("Failed to load members:", err);
+      console.error(err);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to load members",
+      });
     }
   }, [filterDept]);
 
@@ -462,7 +475,16 @@ export default function TeamPage() {
       if (res.ok) {
         setDeptModal({ open: false, editing: null });
         await fetchDepartments();
+      } else {
+        throw new Error("Failed to save department");
       }
+    } catch (err) {
+      console.error(err);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to save department",
+      });
     } finally {
       setActionLoading(false);
     }
@@ -492,7 +514,16 @@ export default function TeamPage() {
       if (res.ok) {
         setMemberModal({ open: false, editing: null });
         await Promise.all([fetchMembers(), fetchDepartments()]);
+      } else {
+        throw new Error("Failed to save member");
       }
+    } catch (err) {
+      console.error(err);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to save member",
+      });
     } finally {
       setActionLoading(false);
     }
@@ -510,7 +541,12 @@ export default function TeamPage() {
       });
       await fetchMembers();
     } catch (err) {
-      console.error("Failed to toggle availability:", err);
+      console.error(err);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to toggle availability",
+      });
     }
   };
 
@@ -528,7 +564,16 @@ export default function TeamPage() {
       if (res.ok) {
         setDeleteModal(null);
         await Promise.all([fetchDepartments(), fetchMembers()]);
+      } else {
+        throw new Error("Delete failed");
       }
+    } catch (err) {
+      console.error(err);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to delete item",
+      });
     } finally {
       setActionLoading(false);
     }

@@ -1,6 +1,7 @@
 "use client";
 
 import { Header } from "@/components/layout/header";
+import { useToast } from "@/components/ui/toast";
 import {
   MessageCircle,
   Mail,
@@ -81,6 +82,7 @@ const statuses = [
 ];
 
 export default function ConversationsPage() {
+  const { toast } = useToast();
   const [conversations, setConversations] = useState<ConversationData[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedConversation, setSelectedConversation] =
@@ -108,7 +110,12 @@ export default function ConversationsPage() {
         setConversations(data);
       }
     } catch (error) {
-      console.error("Failed to fetch conversations:", error);
+      console.error(error);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to fetch conversations",
+      });
     } finally {
       setLoading(false);
     }
@@ -123,7 +130,12 @@ export default function ConversationsPage() {
         setSelectedConversation(data);
       }
     } catch (error) {
-      console.error("Failed to fetch conversation detail:", error);
+      console.error(error);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to fetch conversation detail",
+      });
     } finally {
       setDetailLoading(false);
     }
@@ -163,7 +175,12 @@ export default function ConversationsPage() {
         fetchConversations();
       }
     } catch (error) {
-      console.error("Failed to send message:", error);
+      console.error(error);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to send message",
+      });
     } finally {
       setSending(false);
     }
@@ -182,7 +199,12 @@ export default function ConversationsPage() {
         fetchConversations();
       }
     } catch (error) {
-      console.error("Failed to update status:", error);
+      console.error(error);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to update status",
+      });
     }
   };
 

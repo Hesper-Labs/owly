@@ -1,6 +1,7 @@
 "use client";
 
 import { Header } from "@/components/layout/header";
+import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 import {
   Settings as SettingsIcon,
@@ -98,41 +99,6 @@ const sectionFields: Record<SectionKey, (keyof SettingsData)[]> = {
   ],
   whatsapp: ["whatsappMode", "whatsappApiKey", "whatsappPhone"],
 };
-
-// ---------------------------------------------------------------------------
-// Toast component
-// ---------------------------------------------------------------------------
-
-interface Toast {
-  id: number;
-  type: "success" | "error";
-  message: string;
-}
-
-function ToastContainer({ toasts }: { toasts: Toast[] }) {
-  return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2">
-      {toasts.map((t) => (
-        <div
-          key={t.id}
-          className={cn(
-            "flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg text-sm font-medium transition-all animate-in slide-in-from-right",
-            t.type === "success"
-              ? "bg-owly-success text-white"
-              : "bg-owly-danger text-white"
-          )}
-        >
-          {t.type === "success" ? (
-            <CheckCircle className="h-4 w-4 flex-shrink-0" />
-          ) : (
-            <AlertCircle className="h-4 w-4 flex-shrink-0" />
-          )}
-          {t.message}
-        </div>
-      ))}
-    </div>
-  );
-}
 
 // ---------------------------------------------------------------------------
 // Reusable form components
@@ -762,19 +728,11 @@ const defaultSettings: SettingsData = {
 };
 
 export default function SettingsPage() {
+  const { toast } = useToast();
   const [data, setData] = useState<SettingsData>(defaultSettings);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<SectionKey>("general");
-  const [toasts, setToasts] = useState<Toast[]>([]);
-
-  const addToast = useCallback((type: "success" | "error", message: string) => {
-    const id = Date.now();
-    setToasts((prev) => [...prev, { id, type, message }]);
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 3000);
-  }, []);
 
   useEffect(() => {
     fetch("/api/settings")
@@ -788,9 +746,16 @@ export default function SettingsPage() {
         }
         setData(merged);
       })
-      .catch(() => addToast("error", "Failed to load settings"))
+      .catch((err) => {
+        console.error(err);
+        toast({
+          type: "error",
+          title: "Error",
+          description: "Failed to load settings",
+        });
+      })
       .finally(() => setLoading(false));
-  }, [addToast]);
+  }, [toast]);
 
   const update = (field: keyof SettingsData, value: string | number) => {
     setData((prev) => ({ ...prev, [field]: value }));
@@ -812,9 +777,18 @@ export default function SettingsPage() {
       });
 
       if (!res.ok) throw new Error("Save failed");
-      addToast("success", "Settings saved successfully");
-    } catch {
-      addToast("error", "Failed to save settings. Please try again.");
+      toast({
+        type: "success",
+        title: "Success",
+        description: "Settings saved successfully",
+      });
+    } catch (err) {
+      console.error(err);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to save settings. Please try again.",
+      });
     } finally {
       setSaving(false);
     }
@@ -896,8 +870,6 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
-
-      <ToastContainer toasts={toasts} />
     </>
   );
 }

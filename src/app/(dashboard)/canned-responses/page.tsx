@@ -1,6 +1,7 @@
 "use client";
 
 import { Header } from "@/components/layout/header";
+import { useToast } from "@/components/ui/toast";
 import {
   Zap,
   Plus,
@@ -35,6 +36,7 @@ const defaultForm = {
 };
 
 export default function CannedResponsesPage() {
+  const { toast } = useToast();
   const [responses, setResponses] = useState<CannedResponseData[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -57,7 +59,12 @@ export default function CannedResponsesPage() {
         setResponses(data);
       }
     } catch (error) {
-      console.error("Failed to fetch canned responses:", error);
+      console.error(error);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to fetch canned responses",
+      });
     } finally {
       setLoading(false);
     }
@@ -119,7 +126,12 @@ export default function CannedResponsesPage() {
         fetchResponses();
       }
     } catch (error) {
-      console.error("Failed to save canned response:", error);
+      console.error(error);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to save canned response",
+      });
     } finally {
       setSaving(false);
     }
@@ -135,7 +147,12 @@ export default function CannedResponsesPage() {
         fetchResponses();
       }
     } catch (error) {
-      console.error("Failed to delete canned response:", error);
+      console.error(error);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to delete canned response",
+      });
     }
   };
 
@@ -150,7 +167,12 @@ export default function CannedResponsesPage() {
         fetchResponses();
       }
     } catch (error) {
-      console.error("Failed to toggle canned response:", error);
+      console.error(error);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to toggle response status",
+      });
     }
   };
 

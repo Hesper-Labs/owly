@@ -1,5 +1,7 @@
 "use client";
 
+import { useToast } from "@/components/ui/toast";
+
 import { Header } from "@/components/layout/header";
 import {
   Timer,
@@ -60,6 +62,7 @@ function formatMinutes(mins: number): string {
 }
 
 export default function SLAPage() {
+  const { toast } = useToast();
   const [rules, setRules] = useState<SLARuleData[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -76,7 +79,12 @@ export default function SLAPage() {
         setRules(data);
       }
     } catch (error) {
-      console.error("Failed to fetch SLA rules:", error);
+      console.error(error);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to fetch SLA rules",
+      });
     } finally {
       setLoading(false);
     }
@@ -124,7 +132,12 @@ export default function SLAPage() {
         fetchRules();
       }
     } catch (error) {
-      console.error("Failed to save SLA rule:", error);
+      console.error(error);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to save SLA rule",
+      });
     } finally {
       setSaving(false);
     }
@@ -138,7 +151,12 @@ export default function SLAPage() {
         fetchRules();
       }
     } catch (error) {
-      console.error("Failed to delete SLA rule:", error);
+      console.error(error);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to delete SLA rule",
+      });
     }
   };
 
@@ -153,7 +171,12 @@ export default function SLAPage() {
         fetchRules();
       }
     } catch (error) {
-      console.error("Failed to toggle SLA rule:", error);
+      console.error(error);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to toggle rule status",
+      });
     }
   };
 
