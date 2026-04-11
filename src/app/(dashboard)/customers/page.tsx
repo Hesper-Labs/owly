@@ -1,6 +1,7 @@
 "use client";
 
 import { Header } from "@/components/layout/header";
+import { useToast } from "@/components/ui/toast";
 import {
   Search,
   Plus,
@@ -104,6 +105,7 @@ const channelColors: Record<string, string> = {
 // ---------- Main Page ----------
 
 export default function CustomersPage() {
+  const { toast } = useToast();
   const [customers, setCustomers] = useState<CustomerData[]>([]);
   const [pagination, setPagination] = useState<PaginationData>({
     page: 1,
@@ -116,9 +118,7 @@ export default function CustomersPage() {
   const [blockedFilter, setBlockedFilter] = useState(false);
 
   // Detail panel
-  const [selectedCustomer, setSelectedCustomer] = useState<CustomerData | null>(
-    null
-  );
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerData | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -145,9 +145,7 @@ export default function CustomersPage() {
   const [addLoading, setAddLoading] = useState(false);
 
   // Detail tab
-  const [detailTab, setDetailTab] = useState<"notes" | "conversations">(
-    "notes"
-  );
+  const [detailTab, setDetailTab] = useState<"notes" | "conversations">("notes");
 
   // ---------- Fetch ----------
 
@@ -168,7 +166,12 @@ export default function CustomersPage() {
           setPagination(data.pagination);
         }
       } catch (error) {
-        console.error("Failed to fetch customers:", error);
+        console.error(error);
+        toast({
+          type: "error",
+          title: "Error",
+          description: "Failed to fetch customers",
+        });
       } finally {
         setLoading(false);
       }
@@ -192,7 +195,12 @@ export default function CustomersPage() {
         });
       }
     } catch (error) {
-      console.error("Failed to fetch customer detail:", error);
+      console.error(error);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to fetch customer detail",
+      });
     } finally {
       setDetailLoading(false);
     }
@@ -230,7 +238,12 @@ export default function CustomersPage() {
         fetchCustomers(pagination.page);
       }
     } catch (error) {
-      console.error("Failed to update customer:", error);
+      console.error(error);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to update customer",
+      });
     }
   };
 
@@ -247,7 +260,12 @@ export default function CustomersPage() {
         fetchCustomers(pagination.page);
       }
     } catch (error) {
-      console.error("Failed to toggle block:", error);
+      console.error(error);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to toggle block status",
+      });
     }
   };
 
@@ -260,7 +278,12 @@ export default function CustomersPage() {
         fetchCustomers(pagination.page);
       }
     } catch (error) {
-      console.error("Failed to delete customer:", error);
+      console.error(error);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to delete customer",
+      });
     }
   };
 
@@ -281,7 +304,12 @@ export default function CustomersPage() {
         fetchCustomerDetail(selectedCustomer.id);
       }
     } catch (error) {
-      console.error("Failed to add note:", error);
+      console.error(error);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to add note",
+      });
     } finally {
       setAddingNote(false);
     }
@@ -302,7 +330,12 @@ export default function CustomersPage() {
         fetchCustomers();
       }
     } catch (error) {
-      console.error("Failed to add customer:", error);
+      console.error(error);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to add customer",
+      });
     } finally {
       setAddLoading(false);
     }

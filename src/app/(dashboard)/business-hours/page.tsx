@@ -1,6 +1,7 @@
 "use client";
 
 import { Header } from "@/components/layout/header";
+import { useToast } from "@/components/ui/toast";
 import { Save, Check, AlertTriangle } from "lucide-react";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { cn } from "@/lib/utils";
@@ -99,6 +100,7 @@ function generateTimeOptions(): string[] {
 }
 
 export default function BusinessHoursPage() {
+  const { toast } = useToast();
   const [config, setConfig] = useState<BusinessHoursData>(defaultConfig);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -114,7 +116,12 @@ export default function BusinessHoursPage() {
         setConfig(data);
       }
     } catch (error) {
-      console.error("Failed to fetch business hours:", error);
+      console.error(error);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to fetch business hours",
+      });
     } finally {
       setLoading(false);
     }
@@ -140,7 +147,12 @@ export default function BusinessHoursPage() {
         setTimeout(() => setSaved(false), 3000);
       }
     } catch (error) {
-      console.error("Failed to save business hours:", error);
+      console.error(error);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to save business hours",
+      });
     } finally {
       setSaving(false);
     }

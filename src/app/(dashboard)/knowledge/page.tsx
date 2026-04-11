@@ -1,6 +1,7 @@
 "use client";
 
 import { Header } from "@/components/layout/header";
+import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 import {
   BookOpen,
@@ -90,6 +91,7 @@ function CategoryIcon({ color, name }: { color: string; name: string }) {
 // ---------------------------------------------------------------------------
 
 export default function KnowledgeBasePage() {
+  const { toast } = useToast();
   // --- State ---
   const [categories, setCategories] = useState<CategoryWithCount[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
@@ -124,7 +126,12 @@ export default function KnowledgeBasePage() {
         setCategories(data);
       }
     } catch (err) {
-      console.error("Failed to fetch categories:", err);
+      console.error(err);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to fetch categories",
+      });
     } finally {
       setLoadingCategories(false);
     }
@@ -139,7 +146,12 @@ export default function KnowledgeBasePage() {
         setEntries(data);
       }
     } catch (err) {
-      console.error("Failed to fetch entries:", err);
+      console.error(err);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to fetch entries",
+      });
     } finally {
       setLoadingEntries(false);
     }
@@ -195,7 +207,12 @@ export default function KnowledgeBasePage() {
         await fetchCategories();
       }
     } catch (err) {
-      console.error("Failed to save category:", err);
+      console.error(err);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to save category",
+      });
     } finally {
       setSavingCategory(false);
     }
@@ -233,7 +250,12 @@ export default function KnowledgeBasePage() {
         await fetchCategories();
       }
     } catch (err) {
-      console.error("Failed to save entry:", err);
+      console.error(err);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to save entry",
+      });
     } finally {
       setSavingEntry(false);
     }
@@ -250,7 +272,12 @@ export default function KnowledgeBasePage() {
         await fetchEntries(selectedCategoryId);
       }
     } catch (err) {
-      console.error("Failed to toggle entry:", err);
+      console.error(err);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to toggle entry status",
+      });
     }
   }
 
@@ -278,7 +305,12 @@ export default function KnowledgeBasePage() {
         }
       }
     } catch (err) {
-      console.error("Failed to delete:", err);
+      console.error(err);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to delete item",
+      });
     } finally {
       setDeleting(false);
       setDeleteTarget(null);

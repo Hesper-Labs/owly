@@ -1,5 +1,7 @@
 "use client";
 
+import { useToast } from "@/components/ui/toast";
+
 import { Header } from "@/components/layout/header";
 import {
   Ticket,
@@ -87,6 +89,7 @@ const priorityLabels: Record<string, string> = {
 };
 
 export default function TicketsPage() {
+  const { toast } = useToast();
   const [tickets, setTickets] = useState<TicketData[]>([]);
   const [departments, setDepartments] = useState<DepartmentData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -122,7 +125,12 @@ export default function TicketsPage() {
         setTickets(data);
       }
     } catch (error) {
-      console.error("Failed to fetch tickets:", error);
+      console.error(error);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to fetch tickets",
+      });
     } finally {
       setLoading(false);
     }
@@ -136,7 +144,12 @@ export default function TicketsPage() {
         setDepartments(data);
       }
     } catch (error) {
-      console.error("Failed to fetch departments:", error);
+      console.error(error);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to fetch departments",
+      });
     }
   }, []);
 
@@ -172,7 +185,12 @@ export default function TicketsPage() {
         fetchTickets();
       }
     } catch (error) {
-      console.error("Failed to create ticket:", error);
+      console.error(error);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to create ticket",
+      });
     } finally {
       setSaving(false);
     }
@@ -194,7 +212,12 @@ export default function TicketsPage() {
         fetchTickets();
       }
     } catch (error) {
-      console.error("Failed to update ticket:", error);
+      console.error(error);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to update ticket",
+      });
     }
   };
 
@@ -206,7 +229,12 @@ export default function TicketsPage() {
         fetchTickets();
       }
     } catch (error) {
-      console.error("Failed to delete ticket:", error);
+      console.error(error);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to delete ticket",
+      });
     }
   };
 

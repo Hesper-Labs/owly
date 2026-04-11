@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/toast";
 import {
   CheckCircle,
   Circle,
@@ -34,6 +35,7 @@ interface ChecklistItem {
 // ---------------------------------------------------------------------------
 
 export function OnboardingChecklist() {
+  const { toast } = useToast();
   const [items, setItems] = useState<ChecklistItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [dismissed, setDismissed] = useState(false);
@@ -116,7 +118,12 @@ export function OnboardingChecklist() {
 
       setItems(checklist);
     } catch (err) {
-      console.error("Failed to fetch onboarding status:", err);
+      console.error(err);
+      toast({
+        type: "error",
+        title: "Error",
+        description: "Failed to fetch onboarding status",
+      });
     } finally {
       setLoading(false);
     }

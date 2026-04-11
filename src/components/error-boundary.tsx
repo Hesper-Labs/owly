@@ -1,11 +1,13 @@
 "use client";
 
 import React from "react";
+import { useToast } from "@/components/ui/toast";
 import { AlertTriangle, RefreshCw, Home } from "lucide-react";
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
   fallback?: React.ReactNode;
+  toast?: ReturnType<typeof useToast>["toast"];
 }
 
 interface ErrorBoundaryState {
@@ -13,7 +15,7 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 
-export class ErrorBoundary extends React.Component<
+class ErrorBoundaryInner extends React.Component<
   ErrorBoundaryProps,
   ErrorBoundaryState
 > {
@@ -27,6 +29,13 @@ export class ErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
+    if (this.props.toast) {
+      this.props.toast({
+        type: "error",
+        title: "Application Error",
+        description: "An unexpected error occurred. Please try again.",
+      });
+    }
     console.error("ErrorBoundary caught:", error, info);
   }
 
@@ -43,6 +52,11 @@ export class ErrorBoundary extends React.Component<
 
     return this.props.children;
   }
+}
+
+export function ErrorBoundary(props: ErrorBoundaryProps) {
+  const { toast } = useToast();
+  return <ErrorBoundaryInner {...props} toast={toast} />;
 }
 
 function ErrorFallback({ onRetry }: { onRetry: () => void }) {
