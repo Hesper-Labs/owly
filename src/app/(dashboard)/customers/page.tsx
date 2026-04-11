@@ -118,9 +118,7 @@ export default function CustomersPage() {
   const [blockedFilter, setBlockedFilter] = useState(false);
 
   // Detail panel
-  const [selectedCustomer, setSelectedCustomer] = useState<CustomerData | null>(
-    null
-  );
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerData | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -147,9 +145,7 @@ export default function CustomersPage() {
   const [addLoading, setAddLoading] = useState(false);
 
   // Detail tab
-  const [detailTab, setDetailTab] = useState<"notes" | "conversations">(
-    "notes"
-  );
+  const [detailTab, setDetailTab] = useState<"notes" | "conversations">("notes");
 
   // ---------- Fetch ----------
 
